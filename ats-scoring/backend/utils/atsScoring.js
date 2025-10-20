@@ -399,6 +399,123 @@ const computeATSScore = (resumeText, jobText) => {
 
 // Main function to analyze resume
 const analyzeResume = async (filePath, jobDescription) => {
+  // If environment requests Python model via process spawn, call wrapper
+  if (process.env.USE_PY_MODEL === 'true') {
+    try {
+      const { spawn } = require('child_process');
+      const pyScript = path.join(__dirname, '..', 'ATS-Scoring-System-main', 'score_resume.py');
+      const args = ['--file', filePath, '--job', jobDescription || ''];
+
+      const proc = spawn(process.env.PYTHON_BIN || 'python', [pyScript, ...args], { cwd: path.join(__dirname, '..', 'ATS-Scoring-System-main') });
+
+      let stdout = '';
+      let stderr = '';
+
+      const timeout = setTimeout(() => {
+        proc.kill('SIGKILL');
+      }, parseInt(process.env.PY_MODEL_TIMEOUT_MS || '30000'));
+
+      proc.stdout.on('data', (data) => { stdout += data.toString(); });
+      proc.stderr.on('data', (data) => { stderr += data.toString(); });
+
+      const exitCode = await new Promise((resolve, reject) => {
+        proc.on('close', (code) => resolve(code));
+        proc.on('error', (err) => reject(err));
+      });
+
+      clearTimeout(timeout);
+
+      if (exitCode !== 0) {
+        console.error('Python model error stderr:', stderr);
+        // fallback to JS analyzer
+      } else {
+        // parse stdout as JSON
+        try {
+          const parsed = JSON.parse(stdout);
+          if (parsed && parsed.success && parsed.data) {
+            return { success: true, data: parsed.data, resumeText: (parsed.resumeText || '').substring(0, 1000) };
+          } else if (parsed && parsed.success === false) {
+            return { success: false, error: parsed.error || 'Python model reported failure' };
+          }
+        } catch (err) {
+          console.error('Failed to parse python model output:', err, stdout);
+          // fallback
+        }
+      }
+    } catch (err) {
+      console.error('Failed to run python model:', err);
+      // fallback to JS analyzer
+    }
+    // If we reach here, fall back to JS analyzer implementation below
+  }
+
+  // If an external Python model service URL is provided, call it over HTTP
+  if (process.env.PY_MODEL_URL) {
+    try {
+      // lazy require form-data to avoid startup cost when not used
+      const FormData = require('form-data');
+      const https = require('https');
+      const http = require('http');
+      const url = require('url');
+
+      const target = process.env.PY_MODEL_URL;
+      const parsed = url.parse(target);
+      const isHttps = parsed.protocol === 'https:';
+
+      const form = new FormData();
+      // attach file stream
+      form.append('resume', fs.createReadStream(filePath));
+      form.append('job_description', jobDescription || '');
+
+      const headers = form.getHeaders();
+
+      const options = {
+        method: 'POST',
+        hostname: parsed.hostname,
+        port: parsed.port || (isHttps ? 443 : 80),
+        path: parsed.path || '/',
+        headers
+      };
+
+      const httpLib = isHttps ? https : http;
+
+      const result = await new Promise((resolve, reject) => {
+        const req = httpLib.request(options, (res) => {
+          let body = '';
+          res.setEncoding('utf8');
+          res.on('data', (chunk) => body += chunk);
+          res.on('end', () => {
+            try {
+              const parsedBody = JSON.parse(body);
+              resolve({ status: res.statusCode, body: parsedBody });
+            } catch (err) {
+              reject(new Error('Invalid JSON response from Python model: ' + err.message + ' -- ' + body));
+            }
+          });
+        });
+
+        req.on('error', (err) => reject(err));
+
+        // pipe form-data into request
+        form.pipe(req);
+      });
+
+      if (result && result.status >= 200 && result.status < 300) {
+        if (result.body && result.body.success && result.body.data) {
+          return { success: true, data: result.body.data, resumeText: (result.body.resumeText || '').substring(0, 1000) };
+        }
+        if (result.body && result.body.success === false) {
+          return { success: false, error: result.body.error || 'Python model service returned failure' };
+        }
+      } else {
+        console.error('Python model service returned status', result && result.status);
+      }
+    } catch (err) {
+      console.error('Error calling PY_MODEL_URL:', err);
+      // fall through to local JS analyzer
+    }
+  }
+
   try {
     const fileExtension = path.extname(filePath).toLowerCase();
     let resumeText;
