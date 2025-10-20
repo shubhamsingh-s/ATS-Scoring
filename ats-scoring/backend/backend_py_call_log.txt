@@ -1,0 +1,18 @@
+Error: Invalid JSON: Unexpected token < in JSON at position 0 -- raw: <!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Error response</title>
+    </head>
+    <body>
+        <h1>Error response</h1>
+        <p>Error code: 501</p>
+        <p>Message: Unsupported method ('POST').</p>
+        <p>Error code explanation: 501 - Server does not support this operation.</p>
+    </body>
+</html>
+
+    at IncomingMessage.<anonymous> (C:\Users\shubh\OneDrive\Desktop\ats-scoring\ats-scoring\backend\scripts\test_py_model_http.js:31:27)
+    at IncomingMessage.emit (node:events:525:35)
+    at endReadableNT (node:internal/streams/readable:1358:12)
+    at processTicksAndRejections (node:internal/process/task_queues:83:21)

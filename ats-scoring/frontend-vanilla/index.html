@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Scoring Job Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="nav">
+            <div class="container">
+                <div class="brand">
+                    <div class="logo" aria-hidden="true"></div>
+                    <h4>ATS Scoring</h4>
+                </div>
+                <nav class="nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#about">About</a>
+                    <a href="login.html" class="btn btn-primary">Login</a>
+                </nav>
+            </div>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="container hero-grid">
+                    <div>
+                        <div class="eyebrow">Trusted by job seekers</div>
+                        <h1>Boost your interview rate with ATS-smart resumes</h1>
+                        <p class="lead">Get instant, actionable feedback on your resume's compatibility with Applicant Tracking Systems used by top employers.</p>
+                        <div class="cta-row">
+                            <a href="login.html" class="btn btn-primary">Get Started</a>
+                            <a href="#features" class="btn btn-secondary">Explore Features</a>
+                        </div>
+                    </div>
+                    <aside>
+                        <div class="hero-card">
+                            <h4 class="kicker">Your current score</h4>
+                            <div class="score-meta">
+                                <div class="score-bubble">85%</div>
+                                <div>
+                                    <div class="label">Strong</div>
+                                    <div class="muted">Keywords matched: 12/15</div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- Quick Upload (visible when authenticated) -->
+            <section id="quickUploadSection" class="showcase">
+                <div class="container">
+                    <h2>Quick Resume Analysis</h2>
+                    <form id="quickUploadForm" class="upload-form quick-upload-form" aria-label="Quick resume analysis form">
+                        <label for="resumeFileQuick" class="visually-hidden">Select resume file</label>
+                        <input type="file" id="resumeFileQuick" name="resume" accept=".pdf,.doc,.docx" required aria-required="true">
+                        <input type="text" id="jobDescriptionQuick" class="quick-upload-input" name="jobDescription" placeholder="Paste a brief job description (optional)" aria-label="Job description">
+                        <button type="submit" id="quickUploadBtn" class="btn btn-primary" aria-live="polite">
+                            <span class="btn-spinner" style="display:none"><span class="spinner"></span></span>
+                            <span class="btn-text">Analyze</span>
+                        </button>
+                    </form>
+                    <div id="quickUploadResult" class="quick-upload-result" aria-live="polite"></div>
+                    <div id="analysisContainer" class="analysis-container hidden" aria-live="polite">
+                        <!-- Populated by JS after analysis -->
+                    </div>
+                </div>
+            </section>
+
+            <section class="showcase">
+                <div class="container">
+                    <h2>Platform Highlights</h2>
+                    <div class="cards">
+                        <article class="card">
+                            <h3>AI Resume Scoring</h3>
+                            <p>In-depth parsing and scoring to surface missing keywords and formatting issues.</p>
+                        </article>
+                        <article class="card">
+                            <h3>Smart Job Matching</h3>
+                            <p>Personalized job matches based on skills and experience.</p>
+                        </article>
+                        <article class="card">
+                            <h3>Actionable Insights</h3>
+                            <p>Step-by-step guidance to improve your ATS score and interview chances.</p>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section id="features" class="features-section">
+                <div class="container">
+                    <h2>Why Choose Our Platform?</h2>
+                    <div class="cards">
+                        <div class="card">
+                            <div class="kicker">Analysis</div>
+                            <h3>Deep parsing</h3>
+                            <p class="muted">We extract skills, experience, and formatting to benchmark against job descriptions.</p>
+                        </div>
+                        <div class="card">
+                            <div class="kicker">Matching</div>
+                            <h3>Job recommendations</h3>
+                            <p class="muted">Find roles where you are likely to pass ATS filters.</p>
+                        </div>
+                        <div class="card">
+                            <div class="kicker">Track</div>
+                            <h3>Progress tracking</h3>
+                            <p class="muted">See improvements over time and which changes helped most.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="container footer-content">
+                <div>
+                    <h3>ATS Scoring</h3>
+                    <p class="muted">Empowering careers with AI-driven resume optimization.</p>
+                </div>
+                <div>
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="login.html">Login</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Contact</h4>
+                    <p class="muted">support@atsscoring.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">&copy; 2024 ATS Scoring Job Portal</div>
+        </footer>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

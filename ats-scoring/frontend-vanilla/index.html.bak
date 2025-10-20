@@ -1,0 +1,141 @@
+<!-- Backup of index.html created on 2025-10-19 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Scoring Job Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="hero-header">
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <h1>ATS Scoring Portal</h1>
+                </div>
+                <div class="nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#about">About</a>
+                    <a href="login.html" class="btn-primary">Login</a>
+                </div>
+            </nav>
+
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Boost Your Career with AI-Powered Resume Scoring</h1>
+                    <p>Get instant feedback on your resume's ATS compatibility and discover job opportunities that match your skills.</p>
+                    <div class="hero-buttons">
+                        <a href="login.html" class="btn-primary btn-large">Get Started</a>
+                        <a href="#features" class="btn-secondary btn-large">Learn More</a>
+                    </div>
+                </div>
+                <div class="hero-illustration">
+                    <div class="resume-illustration">
+                        <div class="resume-paper">
+                            <div class="resume-header">
+                                <div class="avatar-placeholder"></div>
+                                <div class="resume-title">John Doe</div>
+                            </div>
+                            <div class="resume-content">
+                                <div class="score-indicator">
+                                    <div class="score-circle">
+                                        <span class="score-text">85%</span>
+                                    </div>
+                                    <span class="score-label">ATS Score</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="floating-elements">
+                            <div class="floating-badge">✓ Matched</div>
+                            <div class="floating-badge error">✗ Missing</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section id="features" class="features-section">
+            <div class="section-container">
+                <h2>Why Choose Our Platform?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>AI-Powered Scoring</h3>
+                        <p>Get detailed analysis of your resume's compatibility with ATS systems used by top companies.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Smart Job Matching</h3>
+                        <p>Receive personalized job recommendations based on your skills and experience.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📈</div>
+                        <h3>Track Progress</h3>
+                        <p>Monitor your application success and improve your resume with actionable insights.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">👥</div>
+                        <h3>For Everyone</h3>
+                        <p>Whether you're a student, job seeker, or recruiter, our platform serves all your needs.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about-section">
+            <div class="section-container">
+                <div class="about-content">
+                    <div class="about-text">
+                        <h2>About ATS Scoring</h2>
+                        <p>Applicant Tracking Systems (ATS) are used by over 90% of Fortune 500 companies to filter resumes before they reach human recruiters. Our platform helps you optimize your resume to pass through these systems and land more interviews.</p>
+                        <p>Using advanced AI and machine learning, we analyze your resume against job descriptions and provide detailed feedback on keywords, formatting, and content optimization.</p>
+                    </div>
+                    <div class="about-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">10,000+</div>
+                            <div class="stat-label">Resumes Analyzed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label">Active Jobs</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">95%</div>
+                            <div class="stat-label">Accuracy Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ATS Scoring Portal</h3>
+                    <p>Empowering careers with AI-driven resume optimization.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="login.html">Login</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>support@atsscoring.com</p>
+                    <p>+1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ATS Scoring Job Portal. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

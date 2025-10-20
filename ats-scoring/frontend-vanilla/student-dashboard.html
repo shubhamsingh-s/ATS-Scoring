@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - ATS Scoring Job Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>ATS Portal</h2>
+                <div class="user-info">
+                    <div class="user-avatar">👤</div>
+                    <span id="userName">Student</span>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active"><a href="#dashboard"><span class="menu-icon">🏠</span> Dashboard</a></li>
+                <li><a href="#resume"><span class="menu-icon">📄</span> Resume Analysis</a></li>
+                <li><a href="#jobs"><span class="menu-icon">💼</span> Job Search</a></li>
+                <li><a href="#applications"><span class="menu-icon">📋</span> My Applications</a></li>
+                <li><a href="#profile"><span class="menu-icon">⚙️</span> Profile</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn-secondary btn-full">
+                    <span class="menu-icon">🚪</span> Logout
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <h1>Student Dashboard</h1>
+                <div class="header-actions">
+                    <button id="themeToggle" class="btn-icon">🌙</button>
+                </div>
+            </header>
+
+            <!-- Resume Upload Section -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2>Resume Analysis</h2>
+                    <p>Upload your resume to get ATS scoring and personalized recommendations</p>
+                </div>
+
+                <div class="resume-upload-card">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📄</div>
+                        <h3>Drop your resume here</h3>
+                        <p>or <span class="upload-link">browse files</span></p>
+                        <input type="file" id="resumeFile" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+                        <small>Supported formats: PDF, DOC, DOCX, TXT (Max 5MB)</small>
+                    </div>
+
+                    <div class="upload-form" style="display: none;">
+                        <div class="form-group">
+                            <label for="jobDescription">Job Description (Optional)</label>
+                            <textarea
+                                id="jobDescription"
+                                placeholder="Paste the job description here for more accurate scoring..."
+                                rows="4"
+                            ></textarea>
+                        </div>
+                        <div class="upload-actions">
+                                <button id="uploadBtn" class="btn-primary" aria-live="polite">
+                                    <span class="btn-spinner" style="display: none;"><span class="spinner"></span></span>
+                                    <span class="btn-text">Analyze Resume</span>
+                                </button>
+                                <button id="cancelUpload" class="btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ATS Results Section -->
+            <section class="dashboard-section" id="resultsSection" style="display: none;">
+                <div class="section-header">
+                    <h2>Analysis Results</h2>
+                </div>
+
+                <div class="results-grid">
+                    <!-- ATS Score -->
+                    <div class="result-card score-card">
+                        <h3>ATS Score</h3>
+                        <div class="score-display">
+                            <div class="progress-circle" id="scoreCircle">
+                                <svg width="120" height="120" viewBox="0 0 120 120">
+                                    <circle cx="60" cy="60" r="50" stroke="#e0e0e0" stroke-width="8" fill="none"/>
+                                    <circle cx="60" cy="60" r="50" stroke="#0055FF" stroke-width="8" fill="none"
+                                            stroke-dasharray="314" stroke-dashoffset="314" id="scoreProgress"/>
+                                </svg>
+                                <div class="score-text">
+                                    <span id="scoreValue">0</span><span>%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="score-label" id="scoreLabel">Analyzing...</div>
+                    </div>
+
+                    <!-- Keywords Analysis -->
+                    <div class="result-card keywords-card">
+                        <h3>Keywords Analysis</h3>
+                        <div class="keywords-content">
+                            <div class="keywords-section">
+                                <h4 class="matched">✅ Matched Keywords</h4>
+                                <div id="matchedKeywords" class="keywords-list"></div>
+                            </div>
+                            <div class="keywords-section">
+                                <h4 class="missing">❌ Missing Keywords</h4>
+                                <div id="missingKeywords" class="keywords-list"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div class="result-card recommendations-card">
+                        <h3>💡 Recommendations</h3>
+                        <div id="recommendations" class="recommendations-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Job Recommendations Section -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2>Recommended Jobs</h2>
+                    <p>Jobs that match your skills and experience</p>
+                </div>
+
+                <div class="jobs-grid" id="recommendedJobs">
+                    <!-- Jobs will be loaded here -->
+                </div>
+
+                <div class="loading-spinner" id="jobsLoading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Loading recommendations...</p>
+                </div>
+
+                <div class="no-jobs" id="noJobs" style="display: none;">
+                    <div class="no-jobs-icon">💼</div>
+                    <h3>No job recommendations yet</h3>
+                    <p>Upload your resume to get personalized job suggestions</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Job Details Modal -->
+    <div id="jobModal" class="modal" style="display: none;">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2 id="jobModalTitle">Job Details</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div id="jobModalContent" class="modal-body">
+                <!-- Job details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/student.js"></script>
+</body>
+</html>

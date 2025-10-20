@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Details - ATS Scoring Job Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="job-details-container">
+        <!-- Navigation -->
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <a href="index.html">ATS Scoring Portal</a>
+                </div>
+                <div class="nav-links">
+                    <a href="student-dashboard.html">Dashboard</a>
+                    <a href="#" id="logoutLink">Logout</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Job Details Content -->
+        <main class="job-details-content">
+            <div class="job-details-wrapper">
+                <!-- Job Header -->
+                <section class="job-header">
+                    <div class="job-title-section">
+                        <h1 id="jobTitle">Job Title</h1>
+                        <div class="job-meta">
+                            <span class="company" id="jobCompany">Company Name</span>
+                            <span class="location" id="jobLocation">Location</span>
+                            <span class="job-type" id="jobType">Full Time</span>
+                        </div>
+                    </div>
+                    <div class="job-actions">
+                        <button id="applyBtn" class="btn-primary btn-large">
+                            <span class="btn-text">Apply Now</span>
+                            <div class="btn-spinner" style="display: none;"></div>
+                        </button>
+                        <button id="saveBtn" class="btn-secondary">
+                            <span class="save-icon">♥</span> Save Job
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Job Overview Cards -->
+                <section class="job-overview">
+                    <div class="overview-cards">
+                        <div class="overview-card">
+                            <div class="card-icon">💰</div>
+                            <div class="card-content">
+                                <h3>Salary</h3>
+                                <p id="jobSalary">Not specified</p>
+                            </div>
+                        </div>
+                        <div class="overview-card">
+                            <div class="card-icon">📅</div>
+                            <div class="card-content">
+                                <h3>Posted</h3>
+                                <p id="jobPosted">Recently</p>
+                            </div>
+                        </div>
+                        <div class="overview-card">
+                            <div class="card-icon">👥</div>
+                            <div class="card-content">
+                                <h3>Applicants</h3>
+                                <p id="jobApplicants">0 applicants</p>
+                            </div>
+                        </div>
+                        <div class="overview-card">
+                            <div class="card-icon">🎯</div>
+                            <div class="card-content">
+                                <h3>Experience</h3>
+                                <p id="jobExperience">Not specified</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Job Description -->
+                <section class="job-description">
+                    <h2>Job Description</h2>
+                    <div id="jobDescription" class="description-content">
+                        <!-- Job description will be loaded here -->
+                    </div>
+                </section>
+
+                <!-- Requirements -->
+                <section class="job-requirements">
+                    <h2>Requirements & Skills</h2>
+                    <div id="jobRequirements" class="requirements-content">
+                        <!-- Requirements will be loaded here -->
+                    </div>
+                </section>
+
+                <!-- Company Info -->
+                <section class="company-info">
+                    <h2>About the Company</h2>
+                    <div class="company-card">
+                        <div class="company-header">
+                            <div class="company-logo">🏢</div>
+                            <div class="company-details">
+                                <h3 id="companyName">Company Name</h3>
+                                <p id="companyDescription">Company description will be loaded here...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Similar Jobs -->
+                <section class="similar-jobs">
+                    <h2>Similar Jobs</h2>
+                    <div class="similar-jobs-grid" id="similarJobs">
+                        <!-- Similar jobs will be loaded here -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="job-sidebar">
+                <!-- ATS Tips -->
+                <div class="sidebar-card">
+                    <h3>💡 ATS Optimization Tips</h3>
+                    <ul class="tips-list">
+                        <li>Use keywords from the job description</li>
+                        <li>Include relevant experience and skills</li>
+                        <li>Use standard section headings</li>
+                        <li>Avoid complex formatting</li>
+                        <li>Quantify your achievements</li>
+                    </ul>
+                </div>
+
+                <!-- Application Status -->
+                <div class="sidebar-card" id="applicationStatus" style="display: none;">
+                    <h3>📋 Application Status</h3>
+                    <div class="status-content">
+                        <div class="status-badge" id="statusBadge">Applied</div>
+                        <p id="statusMessage">Your application has been submitted successfully.</p>
+                        <small id="appliedDate">Applied on: --</small>
+                    </div>
+                </div>
+
+                <!-- Quick Apply -->
+                <div class="sidebar-card">
+                    <h3>⚡ Quick Apply</h3>
+                    <p>Upload your resume and apply instantly</p>
+                    <button id="quickApplyBtn" class="btn-primary btn-full">
+                        <span class="btn-text">Apply with Resume</span>
+                        <div class="btn-spinner" style="display: none;"></div>
+                    </button>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Apply Modal -->
+    <div id="applyModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Apply for Job</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="applyForm">
+                    <div class="form-group">
+                        <label for="coverLetter">Cover Letter (Optional)</label>
+                        <textarea id="coverLetter" name="coverLetter" rows="4"
+                            placeholder="Tell us why you're interested in this position..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="resumeFile">Resume</label>
+                        <input type="file" id="resumeFile" name="resume" accept=".pdf,.doc,.docx,.txt" required>
+                        <small>Supported formats: PDF, DOC, DOCX, TXT (Max 5MB)</small>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-primary" id="submitApplicationBtn">
+                            <span class="btn-text">Submit Application</span>
+                            <div class="btn-spinner" style="display: none;"></div>
+                        </button>
+                        <button type="button" class="btn-secondary modal-close">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/job-details.js"></script>
+</body>
+</html>
