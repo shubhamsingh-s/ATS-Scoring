@@ -250,10 +250,12 @@ function checkAuthStatus() {
     // Update user info in UI
     updateUserInfo(user);
 
-    // Redirect based on role if on login page
-    if (window.location.pathname.includes('login.html')) {
-        redirectBasedOnRole(user.role);
-    }
+    // NOTE: previously the app auto-redirected users from the login page when
+    // a valid token + user were present in localStorage. That caused an
+    // "auto-login" behavior. We intentionally do NOT redirect here so the
+    // user can manually confirm / sign out if they wish. If you want to
+    // pre-fill the login form with the stored user email, you can add that
+    // behavior separately.
 }
 
 function updateUserInfo(user) {
