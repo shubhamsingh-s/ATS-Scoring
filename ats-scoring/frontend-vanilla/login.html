@@ -3,130 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - ATS Scoring Job Portal</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>ATS Scoring Platform</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Inter फॉन्ट को Tailwind में जोड़ने के लिए */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* सभी पेजों को डिफ़ॉल्ट रूप से छिपाने के लिए */
+        .page {
+            display: none;
+        }
+        /* जो पेज 'active' है, उसे दिखाने के लिए */
+        .page.active {
+            display: block;
+        }
+        /* (NEW) लोडर एनीमेशन के लिए CSS */
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body>
-    <div class="login-container">
-        <div class="login-wrapper">
-            <!-- Left side illustration -->
-            <div class="login-illustration">
-                <div class="illustration-content">
-                    <h2>Welcome Back!</h2>
-                    <p>Sign in to access your personalized dashboard and continue your career journey.</p>
-                    <div class="illustration-elements">
-                        <div class="resume-icon">📄</div>
-                        <div class="chart-icon">📊</div>
-                        <div class="job-icon">💼</div>
-                        <div class="network-icon">🤝</div>
-                    </div>
-                    <div class="illustration-text">
-                        <p>"The best way to predict the future is to create it."</p>
-                        <cite>- Peter Drucker</cite>
-                    </div>
+<body class="bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen flex items-center justify-center p-4">
+
+    <!-- 1. Login Page (Default View) -->
+    <div id="login-page" class="page active w-full max-w-md">
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+            <h1 class="text-3xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2">ATS Platform</h1>
+            <p class="text-center text-gray-500 mb-8">Login to your account</p>
+            
+            <div class="space-y-4">
+                <!-- (MODIFIED) इनपुट फील्ड्स अब काम कर रहे हैं -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" placeholder="student@example.com" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400">
                 </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400">
+                </div>
+                
+                <!-- (NEW) Login Error Message -->
+                <p id="login-error" class="text-xs text-red-600 hidden">Please enter your email and password.</p>
+
+                <p class="text-center text-sm font-medium text-gray-600 pt-4">Login as:</p>
+                
+                <!-- मुख्य बटन -->
+                <button onclick="loginAs('student')" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:-translate-y-px hover:shadow-lg">
+                    Login as Student
+                </button>
+                <button onclick="loginAs('recruiter')" class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-300 transform hover:-translate-y-px hover:shadow-lg">
+                    Login as Recruiter
+                </button>
             </div>
 
-            <!-- Right side login form -->
-            <div class="login-form-container">
-                <div class="login-form-wrapper">
-                    <div class="login-header">
-                        <h1>Sign In</h1>
-                        <p>Enter your credentials to access your account</p>
-                    </div>
-
-                    <form id="loginForm" class="login-form">
-                        <div class="form-group">
-                            <label for="email">Email Address</label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                required
-                                placeholder="Enter your email"
-                                autocomplete="email"
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                required
-                                placeholder="Enter your password"
-                                autocomplete="current-password"
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="role">Role</label>
-                            <select id="role" name="role" required>
-                                <option value="">Select your role</option>
-                                <option value="student">Student</option>
-                                <option value="recruiter">Recruiter</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="btn-primary btn-full" id="loginBtn" aria-live="polite">
-                            <span class="btn-spinner" style="display: none;"><span class="spinner"></span></span>
-                            <span class="btn-text">Sign In</span>
-                        </button>
-                    </form>
-
-                    <div class="login-footer">
-                        <p>Don't have an account? <a href="#" id="registerLink">Register here</a></p>
-                        <p><a href="index.html">← Back to Home</a></p>
-                    </div>
-                </div>
+            <!-- Registration Link -->
+            <div class="text-center mt-6">
+                <p class="text-sm text-gray-600">
+                    Don't have an account?
+                    <button onclick="showPage('register-page')" class="font-medium text-blue-600 hover:text-blue-500">
+                        Register Now
+                    </button>
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Register Modal -->
-    <div id="registerModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Create Account</h2>
-                <span class="modal-close">&times;</span>
-            </div>
-            <form id="registerForm" class="modal-form">
-                <div class="form-group">
-                    <label for="regName">Full Name</label>
-                    <input type="text" id="regName" name="name" required placeholder="Enter your full name">
+    <!-- 4. Registration Page (NEWLY ADDED) -->
+    <div id="register-page" class="page w-full max-w-md">
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+            <h1 class="text-3xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2">Create Account</h1>
+            <p class="text-center text-gray-500 mb-8">Get started on the platform</p>
+            
+            <div class="space-y-4">
+                <!-- (NEW) Name Field Added -->
+                <div>
+                    <label for="reg-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="reg-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400" placeholder="e.g., Student Name">
                 </div>
-                <div class="form-group">
-                    <label for="regEmail">Email Address</label>
-                    <input type="email" id="regEmail" name="email" required placeholder="Enter your email">
+                <div>
+                    <label for="reg-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="reg-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400" placeholder="you@example.com">
                 </div>
-                <div class="form-group">
-                    <label for="regPassword">Password</label>
-                    <input type="password" id="regPassword" name="password" required placeholder="Create a password">
+                <div>
+                    <label for="reg-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="reg-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400" placeholder="••••••••">
                 </div>
-                <div class="form-group">
-                    <label for="regRole">Role</label>
-                    <select id="regRole" name="role" required>
-                        <option value="">Select your role</option>
+                <div>
+                    <label for="reg-role" class="block text-sm font-medium text-gray-700">I am a:</label>
+                    <select id="reg-role" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white">
                         <option value="student">Student</option>
                         <option value="recruiter">Recruiter</option>
                     </select>
                 </div>
-                <button type="submit" class="btn-primary btn-full" id="registerBtn" aria-live="polite">
-                    <span class="btn-spinner" style="display: none;"><span class="spinner"></span></span>
-                    <span class="btn-text">Create Account</span>
+                
+                <button onclick="register()" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:-translate-y-px hover:shadow-lg">
+                    Create Account
                 </button>
-            </form>
+            </div>
+
+            <!-- Login Link -->
+            <div class="text-center mt-6">
+                <p class="text-sm text-gray-600">
+                    Already have an account?
+                    <button onclick="showPage('login-page')" class="font-medium text-blue-600 hover:text-blue-500">
+                        Login Here
+                    </button>
+                </p>
+            </div>
         </div>
     </div>
 
-    <!-- Toast notifications -->
-    <div id="toastContainer" class="toast-container"></div>
+    <!-- 2. Student Dashboard Page (Hidden) -->
+    <div id="student-dashboard" class="page w-full max-w-4xl p-4">
+        <nav class="bg-white p-4 rounded-2xl shadow-lg border border-gray-200 w-full mb-6 flex justify-between items-center">
+            <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Student Dashboard</h1>
+            <button onclick="logout()" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-200">Logout</button>
+        </nav>
 
-    <script src="js/env.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/auth.js"></script>
+        <!-- (MODIFIED) Aesthetic Greeting with ID -->
+        <div class="mb-6">
+            <h2 id="student-greeting" class="text-3xl font-extrabold text-gray-800">Hello, Student!</h2>
+            <p class="text-lg text-gray-500">Welcome to your dashboard. What would you like to do today?</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1: Check ATS Score (Existing) -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 cursor-pointer">
+                <h2 class="text-xl font-semibold mb-3">Check ATS Score</h2>
+                <p class="text-gray-600 mb-4">Upload your resume and paste a job description to get your match score.</p>
+                <button onclick="showPage('check-score-page')" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+                    Start Scan
+                </button>
+            </div>
+            
+            <!-- Card 2: Make Resume (NEW) -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 cursor-pointer">
+                <h2 class="text-xl font-semibold mb-3">Make Resume</h2>
+                <p class="text-gray-600 mb-4">Use our templates to build a professional, ATS-friendly resume from scratch.</p>
+                <button class="w-full py-2 px-4 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-300 transform hover:scale-105">
+                    Build Resume
+                </button>
+            </div>
+
+            <!-- Card 3: Job Options (Modified from "Search Jobs") -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 cursor-pointer">
+                <h2 class="text-xl font-semibold mb-3">Job Options</h2>
+                <p class="text-gray-600 mb-4">Find jobs posted by top recruiters that match your profile.</p>
+                <button class="w-full py-2 px-4 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-300 transform hover:scale-105">
+                    Browse Jobs
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Recruiter Dashboard Page (Hidden) -->
+    <div id="recruiter-dashboard" class="page w-full max-w-4xl p-4">
+        <nav class="bg-white p-4 rounded-2xl shadow-lg border border-gray-200 w-full mb-6 flex justify-between items-center">
+            <!-- (MODIFIED) Greeting with ID -->
+            <h1 id="recruiter-greeting" class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">Recruiter Dashboard</h1>
+            <button onclick="logout()" class="text-sm font-medium text-gray-600 hover:text-green-600 transition-colors duration-200">Logout</button>
+        </nav>
+
+        <!-- (MODIFIED) Grid layout is now 3 equal columns -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1: Post Job (Add Job) -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 cursor-pointer">
+                <h2 class="text-xl font-semibold mb-3">Add Job</h2>
+                <p class="text-gray-600 mb-4">Create a new job listing and add keywords for the ATS scanner.</p>
+                <button class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-all duration-300 transform hover:scale-105">
+                    Create Job Post
+                </button>
+            </div>
+            
+            <!-- Card 2: Check ATS Score (NEWLY ADDED for Recruiter) -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 cursor-pointer">
+                <h2 class="text-xl font-semibold mb-3">Check ATS Score</h2>
+                <p class="text-gray-600 mb-4">Scan a resume against one of your job descriptions or custom keywords.</p>
+                <button onclick="showPage('check-score-page')" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+                    Start Scan
+                </button>
+            </div>
+
+            <!-- Card 3: View Applicants (MODIFIED) no longer col-span-2 -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1">
+                <h2 class="text-xl font-semibold mb-3">View Applicants</h2>
+                <p class="text-gray-600 mb-4">Review applicants for your job posts, sorted by ATS score.</p>
+                <!-- Fake Applicant List -->
+                <div class="space-y-3 mt-4">
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border transition-all duration-200 hover:bg-gray-100">
+                        <p class="font-semibold">Software Engineer</p>
+                        <span class="text-lg font-bold text-blue-600">85%</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border transition-all duration-200 hover:bg-gray-100">
+                        <p class="font-semibold">Data Analyst</p>
+                        <span class="text-lg font-bold text-yellow-600">62%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Check ATS Score Page (NEWLY ADDED) -->
+    <div id="check-score-page" class="page w-full max-w-4xl p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Check ATS Score</h1>
+                <!-- (MODIFIED) Back button is now dynamic -->
+                <button onclick="goBackToDashboard()" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-200">
+                    &larr; Back to Dashboard
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Side: Inputs -->
+                <div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">1. Upload Your Resume</label>
+                        <input type="file" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"/>
+                    </div>
+                    <div class="mb-4">
+                        <label for="job-description" class="block text-sm font-medium text-gray-700 mb-1">2. Paste Job Description</label>
+                        <textarea id="job-description" rows="10" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400" placeholder="Paste the full job description here..."></textarea>
+                    </div>
+                    <button onclick="runAtsScan()" class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:-translate-y-px hover:shadow-lg">
+                        Scan My Resume
+                    </button>
+                </div>
+
+                <!-- Right Side: Results (Hidden by default) -->
+                <div id="results-container" class="border-l border-gray-200 pl-6">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-800">Your Score:</h2>
+                    
+                    <!-- Loader (Hidden) -->
+                    <div id="loader" class="page flex justify-center items-center h-48">
+                        <div class="loader"></div>
+                    </div>
+
+                    <!-- Results (Hidden) -->
+                    <div id="results" class="page">
+                        <div class="text-center p-8 bg-blue-50 rounded-xl border border-blue-200">
+                            <h3 class="text-6xl font-extrabold text-blue-600">85%</h3>
+                            <p class="font-medium text-gray-700 mt-2">Match Score</p>
+                        </div>
+                        <div class="mt-6">
+                            <h4 class="font-semibold text-gray-700">Keyword Feedback:</h4>
+                            <p class="text-sm text-gray-500 mb-3">Keywords from the job description found in your resume.</p>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">Python</span>
+                                <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">React</span>
+                                <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">API</span>
+                                <span class="px-3 py-1 rounded-full bg-red-100 text-red-800 text-sm font-medium">MongoDB</span>
+                            </div>
+                            <p class="text-xs text-red-600 mt-2">Hint: You are missing the keyword "MongoDB".</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // (NEW) State variable to track logged in user role
+        let currentUserRole = '';
+        let currentUserEmail = '';
+        // (NEW) Simple "database" to store registered user's name
+        let userDatabase = {};
+
+        // पेज दिखाने के लिए JavaScript
+        function showPage(pageId) {
+            // सभी पेजों को छिपाएँ
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // केवल 'active' पेज दिखाएँ
+            const pageToShow = document.getElementById(pageId);
+            if (pageToShow) {
+                pageToShow.classList.add('active');
+            }
+        }
+
+        // (NEW) ATS स्कैन चलाने के लिए फ़ंक्शन
+        function runAtsScan() {
+            // असली रिजल्ट्स को छिपाएँ, लोडर दिखाएँ
+            const resultsDiv = document.getElementById('results');
+            const loaderDiv = document.getElementById('loader');
+            
+            resultsDiv.classList.remove('active');
+            loaderDiv.classList.add('active'); // लोडर दिखाएँ
+
+            // 2 सेकंड के लिए रुकें (फर्जी स्कैनिंग)
+            setTimeout(() => {
+                // लोडर को छिपाएँ, असली रिजल्ट्स दिखाएँ
+                loaderDiv.classList.remove('active');
+                resultsDiv.classList.add('active');
+            }, 2000); // 2000ms = 2 seconds
+        }
+
+        // (MODIFIED) लॉगिन फ़ंक्शन
+        function loginAs(role) {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('login-error');
+
+            // (NEW) Simple validation
+            if (!email || !password) {
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            errorMsg.classList.add('hidden');
+
+            // Set global state
+            currentUserRole = role;
+            currentUserEmail = email;
+
+            // (NEW) Check if user exists in our "database" to get their name
+            let userName = email; // Default to email
+            if (userDatabase[email]) {
+                userName = userDatabase[email].name; // Use registered name
+            }
+
+            if (role === 'student') {
+                // Update greeting
+                document.getElementById('student-greeting').innerText = `Hello, ${userName}!`;
+                showPage('student-dashboard');
+            } else if (role === 'recruiter') {
+                // Update greeting
+                document.getElementById('recruiter-greeting').innerText = `Recruiter: ${userName}`;
+                showPage('recruiter-dashboard');
+            }
+        }
+
+        // (MODIFIED) रजिस्ट्रेशन फ़ंक्शन
+        function register() {
+            const regName = document.getElementById('reg-name').value;
+            const regEmail = document.getElementById('reg-email').value;
+            const regPassword = document.getElementById('reg-password').value;
+
+            // (NEW) Save to our fake database
+            if (regEmail) {
+                userDatabase[regEmail] = {
+                    name: regName || "User", // Default to "User" if name is empty
+                    password: regPassword
+                };
+            }
+
+            // (NEW) Pre-fill login form
+            document.getElementById('email').value = regEmail;
+            document.getElementById('password').value = regPassword;
+            
+            showPage('login-page');
+        }
+
+        // (NEW) Dynamic back button function
+        function goBackToDashboard() {
+            if (currentUserRole === 'student') {
+                showPage('student-dashboard');
+            } else if (currentUserRole === 'recruiter') {
+                showPage('recruiter-dashboard');
+            } else {
+                // Fallback in case state is lost
+                showPage('login-page');
+            }
+        }
+
+        // (MODIFIED) लॉगआउट फ़ंक्शन
+        function logout() {
+            // Reset global state
+            currentUserRole = '';
+            currentUserEmail = '';
+
+            // Clear login form
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('login-error').classList.add('hidden');
+
+            showPage('login-page');
+        }
+
+        // डिफ़ॉल्ट रूप से लॉगिन पेज दिखाने के लिए
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage('login-page');
+        });
+    </script>
+
 </body>
 </html>
