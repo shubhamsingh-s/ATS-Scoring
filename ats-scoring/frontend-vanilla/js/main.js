@@ -240,8 +240,11 @@ function checkAuthStatus() {
     const user = JSON.parse(localStorage.getItem('user') || 'null');
 
     if (!token || !user) {
-        // Redirect to login if not authenticated and not on login page
-        if (!window.location.pathname.includes('login.html') && !window.location.pathname.includes('index.html')) {
+        // Redirect to login if not authenticated and not on login page or site root.
+        // NOTE: Netlify serves the site root as "/" (which does not include
+        // "index.html" in the pathname). Treat "/" as the landing page so
+        // users visiting the site root are not auto-redirected to login.
+        if (!window.location.pathname.includes('login.html') && window.location.pathname !== '/' && !window.location.pathname.includes('index.html')) {
             window.location.href = 'login.html';
         }
         return;
