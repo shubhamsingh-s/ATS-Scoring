@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -36,6 +37,29 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// React frontend is deployed separately on Netlify
+
+// Serve a plain HTML/CSS (vanilla) frontend from ../frontend-vanilla at /vanilla when present
+const vanillaFrontendPath = path.join(__dirname, '..', 'frontend-vanilla');
+if (fs.existsSync(vanillaFrontendPath)) {
+  // Serve static assets (css, js, images) from the vanilla frontend folder under /vanilla
+  app.use('/vanilla', express.static(vanillaFrontendPath));
+
+  // Serve admin dashboard specifically at /vanilla/admin
+  app.get('/vanilla/admin', (req, res, next) => {
+    const adminFile = path.join(vanillaFrontendPath, 'admin-dashboard.html');
+    if (fs.existsSync(adminFile)) return res.sendFile(adminFile);
+    return next();
+  });
+
+  // For any other /vanilla GET request, serve the vanilla index.html if it exists
+  app.get('/vanilla/*', (req, res, next) => {
+    const indexFile = path.join(vanillaFrontendPath, 'index.html');
+    if (fs.existsSync(indexFile)) return res.sendFile(indexFile);
+    return next();
+  });
+}
 
 // Routes
 app.use('/api/auth', authRoutes);

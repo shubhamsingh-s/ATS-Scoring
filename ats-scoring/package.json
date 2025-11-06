@@ -1,0 +1,12 @@
+{
+  "name": "ats-scoring-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "write-env": "node tools/write-env.js",
+    "build:frontend": "npm run write-env && echo \"static frontend ready\""
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
