@@ -1,0 +1,7 @@
+[build]
+  base = "ats-scoring"
+  command = "npm run build:frontend"
+  publish = "frontend-vanilla"
+
+[functions]
+  directory = "netlify/functions"
