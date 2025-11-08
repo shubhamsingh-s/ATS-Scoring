@@ -1,3 +1,42 @@
+# Deployment Guide
+
+This project deploys the frontend to Netlify and the backend to Render (recommended for long-running or heavy backends).
+
+Required GitHub Secrets (Repository Settings → Secrets → Actions)
+- `NETLIFY_AUTH_TOKEN` — Netlify personal access token
+- `NETLIFY_SITE_ID` — Netlify site id for the frontend site
+- `API_URL` — (optional) public backend URL used by the frontend when generating `env.js`
+- `RENDER_API_KEY` — Render API key with deploy permission
+- `RENDER_SERVICE_ID` — Render service id for the backend
+
+How it works
+- Pushing to `main` triggers the frontend workflow which runs `tools/write-env.js` and deploys the `frontend-vanilla` folder to Netlify.
+- Pushing changes under `backend/` triggers the Render workflow which requests a new deploy via the Render API.
+
+Manual deploy (local)
+- Netlify: `netlify deploy --prod --dir=frontend-vanilla --site YOUR_NETLIFY_SITE_ID`
+- Render (trigger):
+  ```bash
+  curl -X POST "https://api.render.com/deploys" \
+    -H "Authorization: Bearer RENDER_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{"serviceId":"RENDER_SERVICE_ID","clearCache":true}'
+  ```
+
+Notes
+- If your backend requires file uploads, long execution times, or hosts a Python model, prefer Render.
+- If you later convert the Node backend to Netlify Functions (serverless), the repo already contains a `netlify/functions/` area and a redirect in `netlify.toml` to forward `/api/*` to the function.
+- Do not commit secrets to the repo; use GitHub Secrets and Netlify environment variables.
+
+Checklist (quick)
+1. Create Netlify site and get `NETLIFY_SITE_ID`.
+2. Create and add `NETLIFY_AUTH_TOKEN` to GitHub Secrets.
+3. Create Render service and add `RENDER_SERVICE_ID` and `RENDER_API_KEY` to GitHub Secrets.
+4. Add `API_URL` secret (optional) for `tools/write-env.js`.
+5. Push to `main` and verify the frontend workflow deploys to Netlify.
+6. Push backend changes and verify the Render deploy is triggered.
+
+If you want, I can also set up the GitHub secrets via the GitHub CLI commands (I will provide the exact `gh secret set` commands if you choose that option).
 # Deployment Guide for ATS Scoring System
 
 ## Overview
