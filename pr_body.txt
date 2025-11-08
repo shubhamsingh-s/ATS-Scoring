@@ -1,0 +1,70 @@
+This PR adds comprehensive deployment infrastructure for the ATS Scoring System with automated CI/CD pipelines.
+
+## Changes Made
+
+### GitHub Actions Workflows
+- **Frontend Deployment**: Auto-deploys vanilla frontend to Netlify on main branch push
+- **Backend Deployment Options**:
+  - Netlify Functions (recommended serverless option)
+  - Render (alternative full server deployment)
+
+### Backend Configuration
+- Added Netlify Functions setup with `serverless-http` wrapper
+- Created `netlify/functions/api.js` for serverless deployment
+- Added `netlify.toml` configuration for functions
+- Added Render deployment configuration (`render.yaml`)
+
+### Documentation
+- Comprehensive deployment guide (`README.deploy.md`)
+- Step-by-step setup instructions
+- GitHub secrets configuration
+- Troubleshooting section
+
+### Dependencies
+- Added `serverless-http` to backend package.json
+- Fixed Netlify CLI compatibility for Node.js v16
+
+## Deployment Options
+
+### Frontend (Netlify Static Site)
+- Auto-deploys from `main` branch
+- Uses `tools/write-env.js` for API URL injection
+- Static hosting with global CDN
+
+### Backend (Choose One)
+
+#### Option 1: Netlify Functions (Recommended)
+- Serverless Express.js deployment
+- API endpoint: `/.netlify/functions/api`
+- Auto-deploys on backend changes
+- Cost-effective for low-medium traffic
+
+#### Option 2: Render
+- Full Express.js server deployment
+- Traditional hosting approach
+- More control over server configuration
+
+## Required Setup
+
+### GitHub Repository Secrets
+```
+NETLIFY_AUTH_TOKEN
+NETLIFY_SITE_ID (frontend)
+NETLIFY_BACKEND_SITE_ID (backend, if using Netlify Functions)
+API_URL (backend URL for frontend)
+RENDER_API_KEY (if using Render)
+RENDER_SERVICE_ID (if using Render)
+```
+
+### Database Configuration
+- MySQL database (AWS RDS, PlanetScale, etc.)
+- Update environment variables in deployment platform
+
+## Next Steps After Merge
+1. Create Netlify sites for frontend and backend
+2. Set up GitHub repository secrets
+3. Configure database and environment variables
+4. Push to `main` to trigger automatic deployments
+5. Test deployed application
+
+This infrastructure provides production-ready deployment with automated CI/CD, multiple hosting options, and comprehensive documentation.
