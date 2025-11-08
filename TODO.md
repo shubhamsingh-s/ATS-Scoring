@@ -1,8 +1,8 @@
 # Dockerization Tasks for ATS Scoring Project
 
 ## Completed Tasks
-- [ ] Analyze project structure and dependencies
-- [ ] Create Dockerfile in project root
+- [x] Analyze project structure and dependencies
+- [x] Create Dockerfile in project root
 - [ ] Modify server.js to serve React build alongside vanilla frontend
 - [ ] Create docker-compose.yml for local development with MySQL
 - [ ] Create .dockerignore
@@ -11,7 +11,7 @@
 - [ ] Ensure no errors in production config (CORS, env vars)
 
 ## Next Steps
-- [ ] Create Dockerfile
+- [x] Create Dockerfile
 - [ ] Modify server.js for React build serving
 - [ ] Create docker-compose.yml
 - [ ] Create .dockerignore

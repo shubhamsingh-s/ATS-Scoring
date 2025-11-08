@@ -1,0 +1,35 @@
+name: Deploy Backend to Netlify Functions
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ats-scoring/backend/**'
+      - '.github/workflows/deploy-backend-netlify.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        working-directory: ats-scoring/backend
+        run: npm install
+
+      - name: Install netlify-cli
+        run: npm install -g netlify-cli
+
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_BACKEND_SITE_ID }}
+        run: |
+          cd ats-scoring/backend
+          netlify deploy --prod --dir=. --functions=netlify/functions --auth="$NETLIFY_AUTH_TOKEN" --site="$NETLIFY_BACKEND_SITE_ID"

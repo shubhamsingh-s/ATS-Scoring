@@ -1,401 +1,549 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATS Scoring Platform</title>
-    <!-- TailwindCSS CDN -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ATS Scoring Platform — Improved</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Inter फॉन्ट को Tailwind में जोड़ने के लिए */
+      /* UI tweaks: larger buttons, smoother shadows, improved spacing */
+      .btn-lg{padding:.75rem 1rem;border-radius:.75rem}
+      .muted{color:#6b7280}
+      .card{transition:transform .18s ease,box-shadow .18s ease}
+      .card:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(2,6,23,0.08)}
+    </style>
+    <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* सभी पेजों को डिफ़ॉल्ट रूप से छिपाने के लिए */
-        .page {
-            display: none;
-        }
-        /* जो पेज 'active' है, उसे दिखाने के लिए */
-        .page.active {
-            display: block;
-        }
-        /* (NEW) लोडर एनीमेशन के लिए CSS */
-        .loader {
-            border: 4px solid #f3f3f3; /* Light grey */
-            border-top: 4px solid #3498db; /* Blue */
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        body { font-family: 'Inter', sans-serif; }
+
+        /* Page system */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Loader */
+        .loader { border: 4px solid rgba(0,0,0,0.06); border-top: 4px solid rgba(34,197,94,1); border-radius: 50%; width: 44px; height: 44px; animation: spin 0.9s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Toast */
+        .toast { position: fixed; right: 20px; top: 20px; z-index: 60; }
+
+        /* Small helpers */
+        .input-focus:focus { outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-6">
 
-    <!-- 1. Login Page (Default View) -->
-    <div id="login-page" class="page active w-full max-w-md">
+    <!-- Toast / Notification container -->
+    <div id="toast" class="toast"></div>
+
+    <!-- LOGIN -->
+    <div id="login-page" class="page max-w-md mx-auto active">
         <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
             <h1 class="text-3xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2">ATS Platform</h1>
-            <p class="text-center text-gray-500 mb-8">Login to your account</p>
-            
+            <p class="text-center text-gray-500 mb-6">Login to your account — only registered users allowed</p>
+
             <div class="space-y-4">
-                <!-- (MODIFIED) इनपुट फील्ड्स अब काम कर रहे हैं -->
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="email" placeholder="student@example.com" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400">
+                    <input type="email" id="email" placeholder="student@example.com" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 input-focus" />
                 </div>
-                <div>
+
+                <div class="relative">
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" id="password" placeholder="••••••••" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400">
+                    <input type="password" id="password" placeholder="••••••••" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 input-focus" />
+                    <button id="toggle-pw" class="absolute right-2 top-8 text-xs text-gray-500">Show</button>
                 </div>
-                
-                <!-- (NEW) Login Error Message -->
-                <p id="login-error" class="text-xs text-red-600 hidden">Please enter your email and password.</p>
 
-                <p class="text-center text-sm font-medium text-gray-600 pt-4">Login as:</p>
-                
-                <!-- मुख्य बटन -->
-                <button onclick="loginAs('student')" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:-translate-y-px hover:shadow-lg">
-                    Login as Student
-                </button>
-                <button onclick="loginAs('recruiter')" class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-300 transform hover:-translate-y-px hover:shadow-lg">
-                    Login as Recruiter
-                </button>
-            </div>
+                <p id="login-error" class="text-xs text-red-600 hidden">Invalid email or password. Make sure you're registered.</p>
 
-            <!-- Registration Link -->
-            <div class="text-center mt-6">
-                <p class="text-sm text-gray-600">
-                    Don't have an account?
-                    <button onclick="showPage('register-page')" class="font-medium text-blue-600 hover:text-blue-500">
-                        Register Now
-                    </button>
-                </p>
+                <div class="flex gap-3">
+                    <button id="login-student" class="w-1/2 flex justify-center py-3 px-4 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition">Login as Student</button>
+                    <button id="login-recruiter" class="w-1/2 flex justify-center py-3 px-4 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition">Login as Recruiter</button>
+                </div>
+
+                <div class="text-center mt-2">
+                    <p class="text-sm text-gray-600">Don't have an account? <button id="to-register" class="font-medium text-blue-600 hover:text-blue-500">Register Now</button></p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 4. Registration Page (NEWLY ADDED) -->
-    <div id="register-page" class="page w-full max-w-md">
+    <!-- REGISTER -->
+    <div id="register-page" class="page max-w-md mx-auto">
         <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
             <h1 class="text-3xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2">Create Account</h1>
-            <p class="text-center text-gray-500 mb-8">Get started on the platform</p>
-            
+            <p class="text-center text-gray-500 mb-6">Create a student or recruiter account. Passwords are stored in localStorage for demo only.</p>
+
             <div class="space-y-4">
-                <!-- (NEW) Name Field Added -->
                 <div>
                     <label for="reg-name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                    <input type="text" id="reg-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400" placeholder="e.g., Student Name">
+                    <input type="text" id="reg-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 input-focus" placeholder="e.g., Student Name" />
                 </div>
                 <div>
                     <label for="reg-email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="reg-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400" placeholder="you@example.com">
+                    <input type="email" id="reg-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 input-focus" placeholder="you@example.com" />
                 </div>
                 <div>
                     <label for="reg-password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" id="reg-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400" placeholder="••••••••">
+                    <input type="password" id="reg-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 input-focus" placeholder="••••••••" />
                 </div>
                 <div>
                     <label for="reg-role" class="block text-sm font-medium text-gray-700">I am a:</label>
-                    <select id="reg-role" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white">
+                    <select id="reg-role" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white input-focus">
                         <option value="student">Student</option>
                         <option value="recruiter">Recruiter</option>
                     </select>
                 </div>
-                
-                <button onclick="register()" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:-translate-y-px hover:shadow-lg">
-                    Create Account
-                </button>
-            </div>
 
-            <!-- Login Link -->
-            <div class="text-center mt-6">
-                <p class="text-sm text-gray-600">
-                    Already have an account?
-                    <button onclick="showPage('login-page')" class="font-medium text-blue-600 hover:text-blue-500">
-                        Login Here
-                    </button>
-                </p>
-            </div>
-        </div>
-    </div>
+                <button id="create-account" class="w-full flex justify-center py-3 px-4 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition">Create Account</button>
 
-    <!-- 2. Student Dashboard Page (Hidden) -->
-    <div id="student-dashboard" class="page w-full max-w-4xl p-4">
-        <nav class="bg-white p-4 rounded-2xl shadow-lg border border-gray-200 w-full mb-6 flex justify-between items-center">
-            <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Student Dashboard</h1>
-            <button onclick="logout()" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-200">Logout</button>
-        </nav>
-
-        <!-- (MODIFIED) Aesthetic Greeting with ID -->
-        <div class="mb-6">
-            <h2 id="student-greeting" class="text-3xl font-extrabold text-gray-800">Hello, Student!</h2>
-            <p class="text-lg text-gray-500">Welcome to your dashboard. What would you like to do today?</p>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Card 1: Check ATS Score (Existing) -->
-            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 cursor-pointer">
-                <h2 class="text-xl font-semibold mb-3">Check ATS Score</h2>
-                <p class="text-gray-600 mb-4">Upload your resume and paste a job description to get your match score.</p>
-                <button onclick="showPage('check-score-page')" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
-                    Start Scan
-                </button>
-            </div>
-            
-            <!-- Card 2: Make Resume (NEW) -->
-            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 cursor-pointer">
-                <h2 class="text-xl font-semibold mb-3">Make Resume</h2>
-                <p class="text-gray-600 mb-4">Use our templates to build a professional, ATS-friendly resume from scratch.</p>
-                <button class="w-full py-2 px-4 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-300 transform hover:scale-105">
-                    Build Resume
-                </button>
-            </div>
-
-            <!-- Card 3: Job Options (Modified from "Search Jobs") -->
-            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 cursor-pointer">
-                <h2 class="text-xl font-semibold mb-3">Job Options</h2>
-                <p class="text-gray-600 mb-4">Find jobs posted by top recruiters that match your profile.</p>
-                <button class="w-full py-2 px-4 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-300 transform hover:scale-105">
-                    Browse Jobs
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. Recruiter Dashboard Page (Hidden) -->
-    <div id="recruiter-dashboard" class="page w-full max-w-4xl p-4">
-        <nav class="bg-white p-4 rounded-2xl shadow-lg border border-gray-200 w-full mb-6 flex justify-between items-center">
-            <!-- (MODIFIED) Greeting with ID -->
-            <h1 id="recruiter-greeting" class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">Recruiter Dashboard</h1>
-            <button onclick="logout()" class="text-sm font-medium text-gray-600 hover:text-green-600 transition-colors duration-200">Logout</button>
-        </nav>
-
-        <!-- (MODIFIED) Grid layout is now 3 equal columns -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Card 1: Post Job (Add Job) -->
-            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 cursor-pointer">
-                <h2 class="text-xl font-semibold mb-3">Add Job</h2>
-                <p class="text-gray-600 mb-4">Create a new job listing and add keywords for the ATS scanner.</p>
-                <button class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-all duration-300 transform hover:scale-105">
-                    Create Job Post
-                </button>
-            </div>
-            
-            <!-- Card 2: Check ATS Score (NEWLY ADDED for Recruiter) -->
-            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 cursor-pointer">
-                <h2 class="text-xl font-semibold mb-3">Check ATS Score</h2>
-                <p class="text-gray-600 mb-4">Scan a resume against one of your job descriptions or custom keywords.</p>
-                <button onclick="showPage('check-score-page')" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
-                    Start Scan
-                </button>
-            </div>
-
-            <!-- Card 3: View Applicants (MODIFIED) no longer col-span-2 -->
-            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1">
-                <h2 class="text-xl font-semibold mb-3">View Applicants</h2>
-                <p class="text-gray-600 mb-4">Review applicants for your job posts, sorted by ATS score.</p>
-                <!-- Fake Applicant List -->
-                <div class="space-y-3 mt-4">
-                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border transition-all duration-200 hover:bg-gray-100">
-                        <p class="font-semibold">Software Engineer</p>
-                        <span class="text-lg font-bold text-blue-600">85%</span>
-                    </div>
-                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border transition-all duration-200 hover:bg-gray-100">
-                        <p class="font-semibold">Data Analyst</p>
-                        <span class="text-lg font-bold text-yellow-600">62%</span>
-                    </div>
+                <div class="text-center mt-4">
+                    <p class="text-sm text-gray-600">Already have an account? <button id="to-login" class="font-medium text-blue-600 hover:text-blue-500">Login Here</button></p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 5. Check ATS Score Page (NEWLY ADDED) -->
-    <div id="check-score-page" class="page w-full max-w-4xl p-4">
+    <!-- STUDENT DASHBOARD -->
+    <div id="student-dashboard" class="page max-w-6xl mx-auto p-4">
+        <nav class="bg-white p-4 rounded-2xl shadow-lg border border-gray-200 w-full mb-6 flex justify-between items-center">
+            <div>
+                <h1 id="student-greeting" class="text-2xl font-extrabold text-gray-800">Hello, Student!</h1>
+                <p class="text-sm text-gray-500">Welcome back — your account is active.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="student-logout" class="text-sm font-medium text-gray-600 hover:text-blue-600">Logout</button>
+            </div>
+        </nav>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                <h2 class="text-xl font-semibold mb-3">Check ATS Score</h2>
+                <p class="text-gray-600 mb-4">Upload your resume and paste a job description to get a match score.</p>
+                <button id="student-start-scan" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">Start Scan</button>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                <h2 class="text-xl font-semibold mb-3">Make Resume</h2>
+                <p class="text-gray-600 mb-4">Quick resume builder with ATS-friendly template.</p>
+                <button id="build-resume" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200">Build Resume</button>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                <h2 class="text-xl font-semibold mb-3">Job Options</h2>
+                <p class="text-gray-600 mb-4">Browse jobs posted by recruiters that match your profile.</p>
+                <button id="browse-jobs" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200">Browse Jobs</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECRUITER DASHBOARD -->
+    <div id="recruiter-dashboard" class="page max-w-6xl mx-auto p-4">
+        <nav class="bg-white p-4 rounded-2xl shadow-lg border border-gray-200 w-full mb-6 flex justify-between items-center">
+            <div>
+                <h1 id="recruiter-greeting" class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">Recruiter Dashboard</h1>
+                <p class="text-sm text-gray-500">Manage job posts and view applicants.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="recruiter-logout" class="text-sm font-medium text-gray-600 hover:text-green-600">Logout</button>
+            </div>
+        </nav>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                <h2 class="text-xl font-semibold mb-3">Add Job</h2>
+                <p class="text-gray-600 mb-4">Create a new job listing and add keywords for the ATS scanner.</p>
+                <button id="create-job-post" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700">Create Job Post</button>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                <h2 class="text-xl font-semibold mb-3">Check ATS Score</h2>
+                <p class="text-gray-600 mb-4">Scan a resume against one of your job descriptions or custom keywords.</p>
+                <button id="recruiter-start-scan" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">Start Scan</button>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                <h2 class="text-xl font-semibold mb-3">View Applicants</h2>
+                <p class="text-gray-600 mb-4">Review applicants for your job posts, sorted by ATS score.</p>
+                <button id="view-applicants" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200">View Applicants</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHECK SCORE PAGE (shared for both roles) -->
+    <div id="check-score-page" class="page max-w-4xl mx-auto">
         <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Check ATS Score</h1>
-                <!-- (MODIFIED) Back button is now dynamic -->
-                <button onclick="goBackToDashboard()" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-200">
-                    &larr; Back to Dashboard
-                </button>
+                <button id="back-to-dashboard" class="text-sm font-medium text-gray-600 hover:text-blue-600">&larr; Back</button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Left Side: Inputs -->
                 <div>
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">1. Upload Your Resume</label>
-                        <input type="file" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"/>
+                        <input id="resume-file" type="file" accept=".pdf,.doc,.docx,.txt" class="w-full text-sm placeholder-gray-500" />
+                        <p id="uploaded-file-name" class="text-xs text-gray-500 mt-1"></p>
                     </div>
+
                     <div class="mb-4">
                         <label for="job-description" class="block text-sm font-medium text-gray-700 mb-1">2. Paste Job Description</label>
-                        <textarea id="job-description" rows="10" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400" placeholder="Paste the full job description here..."></textarea>
+                        <textarea id="job-description" rows="8" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 input-focus" placeholder="Paste the full job description here..."></textarea>
                     </div>
-                    <button onclick="runAtsScan()" class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:-translate-y-px hover:shadow-lg">
-                        Scan My Resume
-                    </button>
+
+                    <button id="scan-btn" class="w-full flex justify-center items-center py-3 px-4 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">Scan My Resume</button>
                 </div>
 
-                <!-- Right Side: Results (Hidden by default) -->
                 <div id="results-container" class="border-l border-gray-200 pl-6">
                     <h2 class="text-xl font-semibold mb-3 text-gray-800">Your Score:</h2>
-                    
-                    <!-- Loader (Hidden) -->
-                    <div id="loader" class="page flex justify-center items-center h-48">
-                        <div class="loader"></div>
-                    </div>
+                    <div id="loader" class="hidden flex justify-center items-center h-48"><div class="loader"></div></div>
 
-                    <!-- Results (Hidden) -->
-                    <div id="results" class="page">
-                        <div class="text-center p-8 bg-blue-50 rounded-xl border border-blue-200">
-                            <h3 class="text-6xl font-extrabold text-blue-600">85%</h3>
-                            <p class="font-medium text-gray-700 mt-2">Match Score</p>
+                    <div id="results" class="hidden space-y-4">
+                        <div class="text-center p-6 bg-blue-50 rounded-xl border border-blue-200">
+                            <h3 id="score-value" class="text-6xl font-extrabold text-blue-600">0%</h3>
+                            <p id="score-label" class="font-medium text-gray-700 mt-2">Match Score</p>
                         </div>
-                        <div class="mt-6">
+
+                        <div>
                             <h4 class="font-semibold text-gray-700">Keyword Feedback:</h4>
-                            <p class="text-sm text-gray-500 mb-3">Keywords from the job description found in your resume.</p>
-                            <div class="flex flex-wrap gap-2">
-                                <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">Python</span>
-                                <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">React</span>
-                                <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">API</span>
-                                <span class="px-3 py-1 rounded-full bg-red-100 text-red-800 text-sm font-medium">MongoDB</span>
-                            </div>
-                            <p class="text-xs text-red-600 mt-2">Hint: You are missing the keyword "MongoDB".</p>
+                            <p id="keyword-feedback" class="text-sm text-gray-500 mb-3">Keywords from the job description found in your resume.</p>
+                            <div id="keyword-chips" class="flex flex-wrap gap-2"></div>
+                            <p id="keyword-hint" class="text-xs text-red-600 mt-2 hidden"></p>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- BUILD RESUME (simple form) -->
+    <div id="build-resume-page" class="page max-w-3xl mx-auto">
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-extrabold">Resume Builder</h1>
+                <button id="resume-back" class="text-sm font-medium text-gray-600 hover:text-blue-600">&larr; Back</button>
+            </div>
+            <div class="space-y-4">
+                <input id="res-name" type="text" placeholder="Full name" class="w-full px-3 py-2 border rounded-md input-focus" />
+                <input id="res-email" type="email" placeholder="Email" class="w-full px-3 py-2 border rounded-md input-focus" />
+                <textarea id="res-summary" rows="4" placeholder="Professional summary" class="w-full px-3 py-2 border rounded-md input-focus"></textarea>
+                <button id="generate-resume" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">Generate Resume (download simple TXT)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JOB LIST (for students) -->
+    <div id="browse-jobs-page" class="page max-w-4xl mx-auto">
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-extrabold">Browse Jobs</h1>
+                <button id="jobs-back" class="text-sm font-medium text-gray-600 hover:text-blue-600">&larr; Back</button>
+            </div>
+            <div id="jobs-list" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- CREATE JOB (for recruiters) -->
+    <div id="create-job-page" class="page max-w-3xl mx-auto">
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-extrabold">Create Job Post</h1>
+                <button id="create-job-back" class="text-sm font-medium text-gray-600 hover:text-green-600">&larr; Back</button>
+            </div>
+            <div class="space-y-4">
+                <input id="job-title" type="text" placeholder="Job title" class="w-full px-3 py-2 border rounded-md input-focus" />
+                <textarea id="job-desc" rows="6" placeholder="Job description (paste keywords)" class="w-full px-3 py-2 border rounded-md input-focus"></textarea>
+                <button id="save-job" class="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700">Save Job</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW APPLICANTS (recruiter) -->
+    <div id="applicants-page" class="page max-w-4xl mx-auto">
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-extrabold">Applicants</h1>
+                <button id="applicants-back" class="text-sm font-medium text-gray-600 hover:text-green-600">&larr; Back</button>
+            </div>
+            <div id="applicants-list" class="space-y-3"></div>
         </div>
     </div>
 
     <script>
-        // (NEW) State variable to track logged in user role
-        let currentUserRole = '';
-        let currentUserEmail = '';
-        // (NEW) Simple "database" to store registered user's name
-        let userDatabase = {};
+        // Simple persistent storage helpers (localStorage) — Demo-only
+        const DB_KEY = 'ats_demo_users_v1';
+        const JOBS_KEY = 'ats_demo_jobs_v1';
 
-        // पेज दिखाने के लिए JavaScript
-        function showPage(pageId) {
-            // सभी पेजों को छिपाएँ
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
-            
-            // केवल 'active' पेज दिखाएँ
-            const pageToShow = document.getElementById(pageId);
-            if (pageToShow) {
-                pageToShow.classList.add('active');
-            }
+        function readDb() {
+            try { return JSON.parse(localStorage.getItem(DB_KEY) || '{}'); } catch { return {}; }
+        }
+        function writeDb(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+        function readJobs() { try { return JSON.parse(localStorage.getItem(JOBS_KEY) || '[]'); } catch { return []; } }
+        function writeJobs(jobs) { localStorage.setItem(JOBS_KEY, JSON.stringify(jobs)); }
+
+        // Toast helper
+        function showToast(message, type='info') {
+            const el = document.createElement('div');
+            el.className = 'px-4 py-2 rounded-md shadow-md bg-white border';
+            el.innerText = message;
+            document.getElementById('toast').appendChild(el);
+            setTimeout(() => { el.classList.add('opacity-0'); setTimeout(()=>el.remove(),400); }, 2500);
         }
 
-        // (NEW) ATS स्कैन चलाने के लिए फ़ंक्शन
-        function runAtsScan() {
-            // असली रिजल्ट्स को छिपाएँ, लोडर दिखाएँ
-            const resultsDiv = document.getElementById('results');
-            const loaderDiv = document.getElementById('loader');
-            
-            resultsDiv.classList.remove('active');
-            loaderDiv.classList.add('active'); // लोडर दिखाएँ
-
-            // 2 सेकंड के लिए रुकें (फर्जी स्कैनिंग)
-            setTimeout(() => {
-                // लोडर को छिपाएँ, असली रिजल्ट्स दिखाएँ
-                loaderDiv.classList.remove('active');
-                resultsDiv.classList.add('active');
-            }, 2000); // 2000ms = 2 seconds
+        // Page navigation
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const e = document.getElementById(id);
+            if (e) e.classList.add('active');
+            window.scrollTo({top:0, behavior:'smooth'});
         }
 
-        // (MODIFIED) लॉगिन फ़ंक्शन
-        function loginAs(role) {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('login-error');
+        // State
+        let currentRole = '';
+        let currentUser = null; // {email,name,role}
 
-            // (NEW) Simple validation
-            if (!email || !password) {
-                errorMsg.classList.remove('hidden');
-                return;
+        // Initialize demo db with a sample user if empty
+        (function seed() {
+            const db = readDb();
+            if (!db['student@example.com']) {
+                db['student@example.com'] = { name: 'Demo Student', password: 'student123', role: 'student' };
             }
-            errorMsg.classList.add('hidden');
-
-            // Set global state
-            currentUserRole = role;
-            currentUserEmail = email;
-
-            // (NEW) Check if user exists in our "database" to get their name
-            let userName = email; // Default to email
-            if (userDatabase[email]) {
-                userName = userDatabase[email].name; // Use registered name
+            if (!db['recruiter@example.com']) {
+                db['recruiter@example.com'] = { name: 'Demo Recruiter', password: 'recruiter123', role: 'recruiter' };
             }
-
-            if (role === 'student') {
-                // Update greeting
-                document.getElementById('student-greeting').innerText = `Hello, ${userName}!`;
-                showPage('student-dashboard');
-            } else if (role === 'recruiter') {
-                // Update greeting
-                document.getElementById('recruiter-greeting').innerText = `Recruiter: ${userName}`;
-                showPage('recruiter-dashboard');
+            writeDb(db);
+            if (!readJobs().length) {
+                writeJobs([ { id: Date.now(), title: 'Software Engineer', desc: 'Python React API MongoDB', createdBy: 'recruiter@example.com' } ]);
             }
-        }
+        })();
 
-        // (MODIFIED) रजिस्ट्रेशन फ़ंक्शन
-        function register() {
-            const regName = document.getElementById('reg-name').value;
-            const regEmail = document.getElementById('reg-email').value;
-            const regPassword = document.getElementById('reg-password').value;
+        // UI elements
+        const loginStudentBtn = document.getElementById('login-student');
+        const loginRecruiterBtn = document.getElementById('login-recruiter');
+        const toRegisterBtn = document.getElementById('to-register');
+        const toLoginBtn = document.getElementById('to-login');
 
-            // (NEW) Save to our fake database
-            if (regEmail) {
-                userDatabase[regEmail] = {
-                    name: regName || "User", // Default to "User" if name is empty
-                    password: regPassword
-                };
-            }
+        const createAccountBtn = document.getElementById('create-account');
+        const togglePwBtn = document.getElementById('toggle-pw');
 
-            // (NEW) Pre-fill login form
-            document.getElementById('email').value = regEmail;
-            document.getElementById('password').value = regPassword;
-            
+        // Bind toggles
+        togglePwBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const pw = document.getElementById('password');
+            if (pw.type === 'password') { pw.type = 'text'; togglePwBtn.innerText = 'Hide'; }
+            else { pw.type = 'password'; togglePwBtn.innerText = 'Show'; }
+        });
+
+        toRegisterBtn.addEventListener('click', () => showPage('register-page'));
+        toLoginBtn.addEventListener('click', () => showPage('login-page'));
+
+        // Registration
+        createAccountBtn.addEventListener('click', () => {
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const password = document.getElementById('reg-password').value;
+            const role = document.getElementById('reg-role').value;
+
+            if (!email || !password) { showToast('Please provide email and password.'); return; }
+
+            const db = readDb();
+            if (db[email]) { showToast('Email already registered. Please login.'); showPage('login-page'); return; }
+
+            db[email] = { name: name || 'User', password, role };
+            writeDb(db);
+
+            // prefill login
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = password;
+            showToast('Account created successfully. You can now login.');
             showPage('login-page');
+        });
+
+        // Login handler (shared function)
+        function handleLogin(role) {
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const err = document.getElementById('login-error');
+            const db = readDb();
+
+            if (!email || !password) { err.innerText = 'Please enter email and password.'; err.classList.remove('hidden'); return; }
+
+            if (!db[email]) { err.innerText = 'No account found. Please register.'; err.classList.remove('hidden'); return; }
+            if (db[email].password !== password) { err.innerText = 'Invalid password.'; err.classList.remove('hidden'); return; }
+
+            // Role must match selected login type
+            if (db[email].role !== role) { err.innerText = `This account is registered as ${db[email].role}. Use correct login.`; err.classList.remove('hidden'); return; }
+
+            // Success
+            err.classList.add('hidden');
+            currentRole = role;
+            currentUser = { email, name: db[email].name, role: db[email].role };
+            localStorage.setItem('ats_current_user', JSON.stringify(currentUser));
+
+            if (role === 'student') { document.getElementById('student-greeting').innerText = `Hello, ${currentUser.name}!`; showPage('student-dashboard'); }
+            else { document.getElementById('recruiter-greeting').innerText = `${currentUser.name} — Recruiter`; showPage('recruiter-dashboard'); }
+
+            showToast('Logged in successfully');
         }
 
-        // (NEW) Dynamic back button function
-        function goBackToDashboard() {
-            if (currentUserRole === 'student') {
-                showPage('student-dashboard');
-            } else if (currentUserRole === 'recruiter') {
-                showPage('recruiter-dashboard');
-            } else {
-                // Fallback in case state is lost
-                showPage('login-page');
-            }
-        }
+        loginStudentBtn.addEventListener('click', () => handleLogin('student'));
+        loginRecruiterBtn.addEventListener('click', () => handleLogin('recruiter'));
 
-        // (MODIFIED) लॉगआउट फ़ंक्शन
+        // Logout
+        document.getElementById('student-logout').addEventListener('click', () => logout());
+        document.getElementById('recruiter-logout').addEventListener('click', () => logout());
+
         function logout() {
-            // Reset global state
-            currentUserRole = '';
-            currentUserEmail = '';
-
-            // Clear login form
+            currentRole = '';
+            currentUser = null;
+            localStorage.removeItem('ats_current_user');
             document.getElementById('email').value = '';
             document.getElementById('password').value = '';
-            document.getElementById('login-error').classList.add('hidden');
-
             showPage('login-page');
+            showToast('Logged out');
         }
 
-        // डिफ़ॉल्ट रूप से लॉगिन पेज दिखाने के लिए
-        document.addEventListener('DOMContentLoaded', () => {
-            showPage('login-page');
+        // Dashboard buttons
+        document.getElementById('student-start-scan').addEventListener('click', () => { showPage('check-score-page'); });
+        document.getElementById('recruiter-start-scan').addEventListener('click', () => { showPage('check-score-page'); });
+
+        document.getElementById('build-resume').addEventListener('click', () => { showPage('build-resume-page'); });
+        document.getElementById('browse-jobs').addEventListener('click', () => { renderJobs(); showPage('browse-jobs-page'); });
+
+        document.getElementById('create-job-post').addEventListener('click', () => { showPage('create-job-page'); });
+        document.getElementById('view-applicants').addEventListener('click', () => { renderApplicants(); showPage('applicants-page'); });
+
+        // Back buttons
+        document.getElementById('back-to-dashboard').addEventListener('click', () => goBack());
+        document.getElementById('resume-back').addEventListener('click', () => goBack());
+        document.getElementById('jobs-back').addEventListener('click', () => goBack());
+        document.getElementById('create-job-back').addEventListener('click', () => goBack());
+        document.getElementById('applicants-back').addEventListener('click', () => goBack());
+
+        function goBack() {
+            if (!currentUser) { showPage('login-page'); return; }
+            if (currentUser.role === 'student') showPage('student-dashboard'); else showPage('recruiter-dashboard');
+        }
+
+        // Scan implementation (very simple keyword matching) — runs locally
+        document.getElementById('scan-btn').addEventListener('click', () => {
+            const fileInput = document.getElementById('resume-file');
+            const jd = document.getElementById('job-description').value.trim().toLowerCase();
+            if (!jd) { showToast('Please paste the job description.'); return; }
+
+            // Show loader
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('loader').classList.remove('hidden');
+
+            // Fake processing delay
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+
+                // Build fake resume text from uploaded file name + user info
+                let resumeText = '';
+                if (fileInput.files && fileInput.files[0]) resumeText = fileInput.files[0].name.toLowerCase();
+                if (currentUser) resumeText += ' ' + (currentUser.name || '') + ' ' + (currentUser.email || '');
+
+                // Extract keywords from job description (words longer than 3 chars)
+                const keywords = [...new Set(jd.split(/[^a-z0-9]+/).filter(w => w.length>3))];
+                const found = [];
+                keywords.forEach(k => { if (resumeText.includes(k)) found.push(k); });
+
+                const score = Math.round((found.length / Math.max(1, keywords.length)) * 100);
+                document.getElementById('score-value').innerText = score + '%';
+                document.getElementById('keyword-chips').innerHTML = '';
+                keywords.forEach(k => {
+                    const span = document.createElement('span');
+                    span.className = 'px-3 py-1 rounded-full text-sm font-medium ' + (found.includes(k) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+                    span.innerText = k;
+                    document.getElementById('keyword-chips').appendChild(span);
+                });
+
+                if (found.length === keywords.length) {
+                    document.getElementById('keyword-hint').classList.add('hidden');
+                } else {
+                    document.getElementById('keyword-hint').classList.remove('hidden');
+                    document.getElementById('keyword-hint').innerText = `Missing ${keywords.length - found.length} keyword(s). Try adding them to your resume.`;
+                }
+
+                document.getElementById('results').classList.remove('hidden');
+            }, 900);
+        });
+
+        // Show uploaded file name
+        document.getElementById('resume-file').addEventListener('change', (e) => {
+            const f = e.target.files[0];
+            if (f) document.getElementById('uploaded-file-name').innerText = `Selected: ${f.name}`;
+            else document.getElementById('uploaded-file-name').innerText = '';
+        });
+
+        // Resume builder -> download simple text file
+        document.getElementById('generate-resume').addEventListener('click', () => {
+            const n = document.getElementById('res-name').value || 'Name';
+            const em = document.getElementById('res-email').value || 'email@example.com';
+            const sum = document.getElementById('res-summary').value || '';
+            const content = `${n}\n${em}\n\nProfessional Summary:\n${sum}`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `${n.replace(/\s+/g,'_')}_resume.txt`; a.click(); URL.revokeObjectURL(url);
+            showToast('Simple resume downloaded');
+        });
+
+        // Jobs: render
+        function renderJobs() {
+            const jobs = readJobs();
+            const container = document.getElementById('jobs-list');
+            container.innerHTML = '';
+            if (!jobs.length) { container.innerHTML = '<p class="text-gray-500">No jobs available yet.</p>'; return; }
+            jobs.forEach(j => {
+                const div = document.createElement('div');
+                div.className = 'p-4 rounded-lg border bg-gray-50';
+                div.innerHTML = `<div class="flex justify-between items-start"><div><h3 class="font-semibold">${j.title}</h3><p class="text-sm text-gray-500">${j.desc}</p></div><div><button class="px-3 py-1 rounded-md bg-blue-600 text-white">Apply</button></div></div>`;
+                container.appendChild(div);
+            });
+        }
+
+        // Create job post
+        document.getElementById('save-job').addEventListener('click', () => {
+            const title = document.getElementById('job-title').value.trim();
+            const desc = document.getElementById('job-desc').value.trim();
+            if (!title || !desc) { showToast('Please provide title and description'); return; }
+            const jobs = readJobs();
+            jobs.unshift({ id: Date.now(), title, desc, createdBy: currentUser ? currentUser.email : 'unknown' });
+            writeJobs(jobs);
+            showToast('Job saved');
+            showPage('recruiter-dashboard');
+        });
+
+        // Applicants (demo) — generate fake applicants sorted by ATS match
+        function renderApplicants() {
+            const applicants = [
+                { name: 'Priya Sharma', role: 'Software Engineer', score: 85 },
+                { name: 'Aman Verma', role: 'Data Analyst', score: 62 },
+                { name: 'Riya Kapoor', role: 'Frontend Dev', score: 74 }
+            ];
+            const container = document.getElementById('applicants-list');
+            container.innerHTML = '';
+            applicants.sort((a,b)=>b.score-a.score).forEach(a => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg border';
+                div.innerHTML = `<div><p class="font-semibold">${a.name}</p><p class="text-sm text-gray-500">Applied: ${a.role}</p></div><div class="text-right"><p class="font-bold">${a.score}%</p><button class="mt-2 ml-2 px-3 py-1 rounded-md bg-green-600 text-white">View</button></div>`;
+                container.appendChild(div);
+            });
+        }
+
+        // On load: restore session if present
+        window.addEventListener('DOMContentLoaded', () => {
+            const session = localStorage.getItem('ats_current_user');
+            if (session) {
+                try {
+                    const u = JSON.parse(session);
+                    currentUser = u; currentRole = u.role;
+                    if (currentRole === 'student') { document.getElementById('student-greeting').innerText = `Hello, ${u.name}!`; showPage('student-dashboard'); }
+                    else { document.getElementById('recruiter-greeting').innerText = `${u.name} — Recruiter`; showPage('recruiter-dashboard'); }
+                } catch(e) { localStorage.removeItem('ats_current_user'); }
+            } else showPage('login-page');
         });
     </script>
 
