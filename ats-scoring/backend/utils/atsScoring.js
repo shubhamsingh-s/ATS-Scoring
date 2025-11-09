@@ -284,15 +284,21 @@ const computeATSScore = (resumeText, jobText) => {
   });
   
   const totalWeight = Object.values(availableWeights).reduce((sum, weight) => sum + weight, 0);
-  let finalScore = -1;
-  
+  // Default to 0 (no match) to avoid returning sentinel -1 which can confuse clients.
+  let finalScore = 0;
+
   if (totalWeight > 0) {
     let scoreSum = 0;
     Object.keys(availableWeights).forEach(key => {
-      scoreSum += components[key].score * (availableWeights[key] / totalWeight);
+      const componentScore = Number(components[key].score) || 0;
+      scoreSum += componentScore * (availableWeights[key] / totalWeight);
     });
     finalScore = Math.round(scoreSum * 100) / 100;
   }
+
+  // Defensive: ensure finalScore is a finite number in [0,100]
+  if (!Number.isFinite(finalScore) || isNaN(finalScore)) finalScore = 0;
+  finalScore = Math.max(0, Math.min(100, finalScore));
   
   // Generate recommendations
   const recommendations = [];
