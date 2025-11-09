@@ -25,7 +25,7 @@ jobs:
         env:
           API_URL: ${{ secrets.API_URL }}
         run: |
-          node tools/write-env.js
+          node ats-scoring/tools/write-env.js
 
       - name: Deploy to Netlify
         env:
