@@ -105,7 +105,13 @@ function initializeTheme() {
 // Render analysis object into the homepage container
 function renderAnalysis(analysis) {
     // Normalise fields
-    const score = Math.round((analysis.score || analysis.ats_score || 0) * 100 || (analysis.score || 0));
+    // analysis.score is expected to be a percentage value between 0 and 100.
+    // Be defensive: prefer explicit numeric values and clamp to [0,100].
+    let rawScore = 0;
+    if (typeof analysis.score === 'number') rawScore = analysis.score;
+    else if (typeof analysis.ats_score === 'number') rawScore = analysis.ats_score;
+    else rawScore = Number(analysis.score) || Number(analysis.ats_score) || 0;
+    const score = Math.max(0, Math.min(100, Math.round(rawScore * 100) / 100));
     const matched = analysis.matched_keywords || analysis.matchedKeywords || analysis.breakdown?.skills?.match || [];
     const missing = analysis.missing_keywords || analysis.missingKeywords || analysis.missing || [];
     const recommendations = analysis.recommendations || analysis.recommendations || [];
