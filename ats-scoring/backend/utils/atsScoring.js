@@ -17,6 +17,41 @@ const DEGREE_KEYWORDS = [
   'm.tech', 'mba', 'phd', 'associate', 'diploma', 'degree', 'engineering', 'computer science'
 ];
 
+// --- Fuzzy matching utilities ---
+// Levenshtein distance and similarity score in [0,1]
+function levenshtein(a, b) {
+  if (!a || !b) return (a === b) ? 0 : Math.max(a ? a.length : 0, b ? b.length : 0);
+  a = a.toLowerCase();
+  b = b.toLowerCase();
+  const alen = a.length;
+  const blen = b.length;
+  const dp = Array.from({ length: blen + 1 }, () => new Array(alen + 1).fill(0));
+  for (let i = 0; i <= blen; i++) dp[i][0] = i;
+  for (let j = 0; j <= alen; j++) dp[0][j] = j;
+  for (let i = 1; i <= blen; i++) {
+    for (let j = 1; j <= alen; j++) {
+      const cost = b.charAt(i - 1) === a.charAt(j - 1) ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+    }
+  }
+  return dp[blen][alen];
+}
+
+function similarity(a, b) {
+  a = (a || '').toString().toLowerCase();
+  b = (b || '').toString().toLowerCase();
+  if (a === b) return 1;
+  const dist = levenshtein(a, b);
+  const maxLen = Math.max(a.length, b.length);
+  if (maxLen === 0) return 0;
+  return Math.max(0, 1 - dist / maxLen);
+}
+
+
 // Extract text from PDF
 const extractTextFromPDF = async (filePath) => {
   try {
@@ -73,15 +108,45 @@ const extractLinkedIn = (text) => {
   return [...new Set(links)];
 };
 
-// Extract skills
+// Extract skills with fuzzy matching
 const extractSkills = (text) => {
   if (!text) return [];
   const textLower = text.toLowerCase();
-  const skills = COMMON_SKILLS.filter(skill => {
-    const regex = new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
-    return regex.test(textLower);
-  });
-  return [...new Set(skills)];
+
+  // Tokenize resume text into words for fuzzy matching
+  const tokens = (textLower.match(/[a-z0-9+#\-]+/g) || []).map(t => t.trim()).filter(Boolean);
+
+  const found = new Map(); // skill -> best similarity
+
+  for (const skill of COMMON_SKILLS) {
+    const skillNorm = skill.toLowerCase();
+
+    // exact match first
+    const regex = new RegExp(`\\b${skillNorm.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\b`);
+    if (regex.test(textLower)) {
+      found.set(skill, 1);
+      continue;
+    }
+
+    // fuzzy search across tokens and short ngrams
+    let best = 0;
+    for (let n = 1; n <= Math.min(3, tokens.length); n++) {
+      for (let i = 0; i <= tokens.length - n; i++) {
+        const ngram = tokens.slice(i, i + n).join(' ');
+        const sim = similarity(ngram, skillNorm);
+        if (sim > best) best = sim;
+        if (best >= 0.95) break;
+      }
+      if (best >= 0.95) break;
+    }
+
+    // accept fuzzy matches above threshold 0.7
+    if (best >= 0.7) found.set(skill, best);
+  }
+
+  return [...found.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([skill]) => skill);
 };
 
 // Extract degrees
@@ -197,11 +262,46 @@ const computeATSScore = (resumeText, jobText) => {
   const resumeSkills = resumeEntities.SKILLS || [];
   
   if (jobSkills.length > 0) {
-    const matchedSkills = jobSkills.filter(skill => resumeSkills.includes(skill));
+    // Attempt exact matches first, then fuzzy-match remaining required skills
+    const matched = [];
+    let totalMatchWeight = 0;
+    for (const reqSkill of jobSkills) {
+      if (resumeSkills.includes(reqSkill)) {
+        matched.push({ skill: reqSkill, similarity: 1 });
+        totalMatchWeight += 1;
+        continue;
+      }
+
+      // fuzzy match against resume skills and tokens
+      let bestSim = 0;
+      // check resumeSkills (which are normalized common skills)
+      for (const r of resumeSkills) {
+        const sim = similarity(reqSkill, r);
+        if (sim > bestSim) bestSim = sim;
+        if (bestSim >= 0.99) break;
+      }
+      // if still low, check resume tokens as fallback
+      if (bestSim < 0.75) {
+        const tokens = Array.from(resumeTokens || []);
+        for (const tok of tokens) {
+          const sim = similarity(reqSkill, tok);
+          if (sim > bestSim) bestSim = sim;
+          if (bestSim >= 0.95) break;
+        }
+      }
+
+      if (bestSim >= 0.7) {
+        matched.push({ skill: reqSkill, similarity: Math.round(bestSim * 100) / 100 });
+        totalMatchWeight += bestSim;
+      }
+    }
+
+    const skillScore = Math.round(((totalMatchWeight / jobSkills.length) * 100) * 100) / 100;
     components.skills = {
-      match: matchedSkills,
+      match: matched.map(m => m.skill),
       required: jobSkills,
-      score: Math.round((matchedSkills.length / jobSkills.length) * 100 * 100) / 100
+      score: skillScore,
+      details: matched
     };
   } else {
     components.skills = { match: [], required: [], score: null };
