@@ -3,486 +3,490 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ATS Scoring Platform — Demo (Student & Recruiter)</title>
+  <title>ATS Scoring — Demo (Student & Recruiter)</title>
 
-  <!-- Tailwind CDN -->
+  <!-- Tailwind (for utility classes) -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- PDF.js & Mammoth -->
+
+  <!-- PDF.js & Mammoth for resume parsing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
 
   <style>
-    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: linear-gradient(135deg,#0f172a 0%,#1e293b 100%); color:#fff; }
-    .glass { background: rgba(17,24,39,0.6); border:1px solid rgba(255,255,255,0.06); backdrop-filter: blur(6px); }
-    .btn-grad { background: linear-gradient(90deg,#2563eb,#7c3aed); }
-    .chip-matched{background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.5)}
-    .chip-missing{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35)}
-    .spinner{border:2px solid rgba(255,255,255,0.2);border-top:2px solid #fff;border-radius:50%;width:18px;height:18px;animation:spin 1s linear infinite}
-    @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
-    .job-card:hover{transform:translateY(-6px);transition:all .18s}
+    /* =========================
+       Theme tokens and motion
+       ========================= */
+    :root{
+      --bg-1: #071028;
+      --bg-2: #0f172a;
+      --card-bg: rgba(17,24,39,0.62);
+      --muted: #94a3b8;
+      --accent-1: #2563eb;
+      --accent-2: #7c3aed;
+      --glass-border: rgba(255,255,255,0.06);
+      --text-main: #e6eef8;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+    [data-theme="light"]{
+      --bg-1: #f6f8fb;
+      --bg-2: #eef2ff;
+      --card-bg: rgba(255,255,255,0.86);
+      --muted: #475569;
+      --accent-1: #2563eb;
+      --accent-2: #6d28d9;
+      --glass-border: rgba(2,6,23,0.06);
+      --text-main: #061224;
+      --success: #059669;
+      --danger: #dc2626;
+    }
+
+    /* Respect prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      :root { --motion-scale: 1; }
+      .motion-safe { animation: none !important; transition: none !important; transform: none !important; }
+    }
+
+    /* Basic body + layout */
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(135deg,var(--bg-1) 0%, var(--bg-2) 60%);
+      color:var(--text-main);
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      min-height:100vh;
+      display:flex; align-items:center; justify-content:center; padding:32px;
+      transition: background-color .25s ease;
+    }
+
+    /* Glass card */
+    .glass{
+      background: var(--card-bg);
+      border-radius:14px;
+      border:1px solid var(--glass-border);
+      backdrop-filter: blur(8px) saturate(110%);
+      box-shadow: 0 8px 28px rgba(2,6,23,0.45);
+      transition: box-shadow .18s ease, transform .12s ease, background-color .2s ease;
+    }
+
+    /* Buttons */
+    .btn-primary{
+      background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+      color:white; padding:10px 14px; border-radius:10px; font-weight:600;
+      box-shadow: 0 12px 30px rgba(37,99,235,0.12);
+      transform-origin:center;
+      transition: transform .12s cubic-bezier(.2,.9,.2,1), box-shadow .12s, opacity .12s;
+    }
+    .btn-primary:hover{ transform: translateY(-3px) scale(1.02); box-shadow: 0 18px 40px rgba(37,99,235,0.14); }
+    .btn-primary:active{ transform: translateY(0) scale(.995); box-shadow: 0 8px 20px rgba(37,99,235,0.08); }
+
+    .btn-ghost{ background: transparent; border: 1px solid rgba(255,255,255,0.04); padding:8px 12px; border-radius:10px; color:var(--muted); transition: transform .12s, background .12s; }
+    .btn-ghost:hover{ transform: translateY(-2px); background: rgba(255,255,255,0.02); }
+
+    .btn-muted{ background: rgba(255,255,255,0.02); padding:8px 12px; border-radius:10px; color:var(--muted); transition: transform .12s; }
+    .btn-muted:hover{ transform: translateY(-2px); }
+
+    /* Card hover */
+    .card-hover{ transition: transform .18s ease, box-shadow .18s ease; }
+    .card-hover:hover{ transform: translateY(-8px); box-shadow: 0 22px 44px rgba(2,6,23,0.5); }
+
+    /* Animated entrance for job cards */
+    @keyframes enterUp {
+      from { opacity: 0; transform: translateY(10px) scale(.995); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .enter-up { animation: enterUp .36s cubic-bezier(.2,.9,.2,1) both; }
+
+    /* Modal animation */
+    .modal-backdrop{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:50; background:rgba(2,6,23,0.6); }
+    .modal-panel{ transform-origin:center; border-radius:12px; padding:18px; max-width:720px; width:100%; max-height:90vh; overflow:auto; }
+    @keyframes modalIn { from{ opacity:0; transform: translateY(8px) scale(.98) } to{ opacity:1; transform: none } }
+    .modal-panel.animate-in{ animation: modalIn .22s cubic-bezier(.2,.9,.2,1) both; }
+
+    /* Toasts sliding */
+    #toastWrap{ position: fixed; right:18px; bottom:18px; display:flex; flex-direction:column; gap:10px; z-index:60; align-items:flex-end; }
+    .toast{ min-width:220px; padding:10px 12px; border-radius:10px; background: rgba(4,8,18,0.86); border:1px solid rgba(255,255,255,0.03); color:var(--text-main); box-shadow:0 12px 30px rgba(2,6,23,0.5); transform-origin:right bottom; }
+    .toast.enter { animation: toastIn .18s ease both; }
+    @keyframes toastIn { from{ opacity:0; transform: translateX(8px) scale(.99) } to{ opacity:1; transform:none } }
+
+    /* Input focus */
+    input:focus, textarea:focus, select:focus { box-shadow: 0 6px 20px rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.28); outline:none; transition:box-shadow .12s; }
+
+    /* Reduced motion fallback */
+    @media (prefers-reduced-motion: reduce){ .enter-up, .modal-panel.animate-in, .toast.enter { animation: none !important } }
+
+    /* Small responsive */
+    @media (max-width:900px){ body{padding:18px} }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
+<body>
   <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-    <!-- Left panel: Info -->
-    <div class="glass p-8 rounded-2xl">
-      <h1 class="text-3xl font-semibold mb-3 bg-clip-text text-transparent" style="background:linear-gradient(90deg,#60a5fa,#a78bfa)">ATS Scoring Platform — Demo</h1>
-      <p class="text-gray-300 mb-6">This demo runs completely in your browser. Use the demo student or demo recruiter to try flows immediately.</p>
-
-      <div class="space-y-3">
-        <div class="flex gap-3">
-          <button id="demoStudentBtn" class="btn-grad px-4 py-2 rounded-lg font-medium">Login as Demo Student</button>
-          <button id="demoRecruiterBtn" class="bg-white/5 px-4 py-2 rounded-lg">Login as Demo Recruiter</button>
+    <!-- Left: feature + theme toggle -->
+    <section class="glass p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2)); -webkit-background-clip:text; color:transparent;">ATS Scoring — Demo</h1>
+          <p class="text-sm mt-2 text-gray-300">Client-side demo for recruiters & students. Post jobs, apply with resume, and view parsed resumes. Data stored in <code>localStorage</code>.</p>
         </div>
-
-        <p class="text-sm text-gray-400">Or register/login normally (not required for demo). Demo accounts are ephemeral and stored in localStorage.</p>
-
-        <hr class="border-white/5 my-4" />
-
-        <div class="space-y-2">
-          <h3 class="text-lg font-semibold">How it works (client-side demo)</h3>
-          <ul class="text-sm text-gray-300 list-disc list-inside">
-            <li>Recruiters can post jobs → jobs saved to <code>localStorage</code>.</li>
-            <li>Students see jobs and can apply with resume file. Resume text is parsed and saved with application.</li>
-            <li>Recruiters see applications for their jobs on recruiter dashboard.</li>
-          </ul>
+        <div class="flex items-center gap-2">
+          <button id="themeToggle" class="btn-ghost" title="Toggle color theme">Toggle theme</button>
         </div>
       </div>
-    </div>
 
-    <!-- Right panel: Auth / Dashboard -->
-    <div class="glass p-6 rounded-2xl">
+      <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button id="demoStudentBtn" class="btn-primary w-full">Login as Demo Student</button>
+        <button id="demoRecruiterBtn" class="btn-ghost w-full">Login as Demo Recruiter</button>
+      </div>
+
+      <div class="mt-6 text-xs text-gray-400">Tip: Theme preference is saved. Prefer reduced motion? Your OS setting is respected.</div>
+    </section>
+
+    <!-- Right: Auth + Dashboard -->
+    <section class="glass p-6">
       <div id="authArea">
-        <div class="flex justify-between mb-4">
-          <div>
-            <button id="showLoginBtn" class="px-3 py-1 rounded-l-md bg-white/10">Login</button>
-            <button id="showRegisterBtn" class="px-3 py-1 rounded-r-md bg-transparent text-gray-300">Register</button>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex rounded-md overflow-hidden bg-white/4">
+            <button id="showLoginBtn" class="px-4 py-2 text-sm font-medium">Login</button>
+            <button id="showRegisterBtn" class="px-4 py-2 text-sm font-medium text-gray-300">Register</button>
           </div>
-          <div id="authHelp" class="text-sm text-gray-400">Use demo buttons on left for instant access</div>
+          <div class="text-sm text-gray-400">Use demo for instant access</div>
         </div>
 
-        <!-- Login Form -->
-        <form id="loginForm" class="space-y-3">
-          <input id="loginEmail" class="w-full p-3 rounded-md bg-white/5" placeholder="Email" required />
-          <input id="loginPassword" type="password" class="w-full p-3 rounded-md bg-white/5" placeholder="Password" required />
-          <div class="flex gap-3">
-            <button type="submit" class="btn-grad px-4 py-2 rounded-md">Login</button>
-            <button id="demoStudentAlt" type="button" class="bg-white/5 px-4 py-2 rounded-md">Demo Student</button>
+        <form id="loginForm" class="space-y-3" autocomplete="on">
+          <div><label class="text-xs text-gray-400">Email</label><input id="loginEmail" class="w-full p-3 rounded-md bg-transparent border border-white/6" placeholder="you@example.com" required /></div>
+          <div><label class="text-xs text-gray-400">Password</label><input id="loginPassword" type="password" class="w-full p-3 rounded-md bg-transparent border border-white/6" placeholder="password" required /></div>
+          <div class="flex items-center gap-3">
+            <button type="submit" class="btn-primary">Login</button>
+            <button id="demoStudentAlt" type="button" class="btn-muted">Demo Student</button>
+            <div class="ml-auto text-sm text-gray-400">Password not enforced in demo</div>
           </div>
         </form>
 
-        <!-- Register Form -->
-        <form id="registerForm" class="space-y-3 hidden mt-4">
-          <input id="regName" class="w-full p-3 rounded-md bg-white/5" placeholder="Full name" required />
-          <input id="regEmail" class="w-full p-3 rounded-md bg-white/5" placeholder="Email" required />
-          <input id="regPassword" type="password" class="w-full p-3 rounded-md bg-white/5" placeholder="Password" required />
-          <select id="regRole" class="w-full p-3 rounded-md bg-white/5">
-            <option value="student">Student</option>
-            <option value="recruiter">Recruiter</option>
-          </select>
-          <button type="submit" class="btn-grad px-4 py-2 rounded-md">Register</button>
+        <form id="registerForm" class="space-y-3 hidden mt-4" autocomplete="on">
+          <div><label class="text-xs text-gray-400">Full name</label><input id="regName" class="w-full p-3 rounded-md bg-transparent border border-white/6" placeholder="Full name" required /></div>
+          <div><label class="text-xs text-gray-400">Email</label><input id="regEmail" class="w-full p-3 rounded-md bg-transparent border border-white/6" placeholder="you@example.com" required /></div>
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="text-xs text-gray-400">Password</label><input id="regPassword" type="password" class="w-full p-3 rounded-md bg-transparent border border-white/6" placeholder="Choose a password" required /></div>
+            <div><label class="text-xs text-gray-400">Role</label><select id="regRole" class="w-full p-3 rounded-md bg-transparent border border-white/6"><option value="student">Student</option><option value="recruiter">Recruiter</option></select></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="submit" class="btn-primary">Register</button>
+            <button type="button" id="regCancel" class="btn-ghost">Cancel</button>
+            <div class="ml-auto text-sm text-gray-400">Registration logs you in (demo)</div>
+          </div>
         </form>
       </div>
 
-      <!-- Dashboard (hidden until login) -->
       <div id="dashboardArea" class="hidden">
-        <div class="flex justify-between items-center mb-4">
-          <h2 id="dashTitle" class="text-xl font-semibold"></h2>
-          <div class="flex items-center gap-3">
-            <span id="userRoleBadge" class="text-sm px-2 py-1 rounded-md bg-white/5"></span>
-            <button id="logoutBtn" class="text-red-400">Logout</button>
-          </div>
-        </div>
-
-        <!-- Recruiter: Post Job -->
-        <div id="recruiterPanel" class="hidden mb-6">
-          <h3 class="font-semibold mb-2">Post a Job</h3>
-          <div class="grid grid-cols-1 gap-2">
-            <input id="jobTitle" placeholder="Job title" class="p-2 rounded-md bg-white/5" />
-            <input id="jobCompany" placeholder="Company" class="p-2 rounded-md bg-white/5" />
-            <textarea id="jobDesc" placeholder="Description" class="p-2 rounded-md bg-white/5"></textarea>
-            <div class="flex gap-2">
-              <button id="postJobBtn" class="btn-grad px-4 py-2 rounded-md">Post Job</button>
-              <button id="refreshJobsBtn" class="bg-white/5 px-4 py-2 rounded-md">Refresh</button>
-            </div>
-          </div>
-
-          <div class="mt-4">
-            <h4 class="font-medium">Your Posted Jobs</h4>
-            <div id="postedJobsList" class="space-y-2 mt-2"></div>
-          </div>
-
-          <hr class="border-white/5 my-4" />
-
+        <div class="flex items-center justify-between mb-4">
           <div>
-            <h4 class="font-medium">Applications Received</h4>
-            <div id="applicationsList" class="space-y-2 mt-2"></div>
+            <h3 id="dashTitle" class="text-lg font-semibold">Welcome</h3>
+            <div id="dashSub" class="text-xs text-gray-400">Your dashboard</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="userRoleBadge" class="badge" style="padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.04);color:var(--muted);">role</span>
+            <button id="logoutBtn" class="btn-ghost">Logout</button>
           </div>
         </div>
 
-        <!-- Student: Job feed -->
+        <!-- Recruiter -->
+        <div id="recruiterPanel" class="hidden">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            <input id="jobTitle" placeholder="Job title" class="p-3 rounded-md bg-transparent border border-white/6" />
+            <input id="jobCompany" placeholder="Company" class="p-3 rounded-md bg-transparent border border-white/6" />
+            <button id="postJobBtn" class="btn-primary">Post Job</button>
+          </div>
+          <textarea id="jobDesc" placeholder="Job description" class="w-full p-3 rounded-md bg-transparent border border-white/6 mb-4"></textarea>
+
+          <div><h4 class="text-sm font-medium text-gray-200 mb-2">Your Posted Jobs</h4><div id="postedJobsList" class="space-y-3"></div></div>
+          <div class="mt-6"><h4 class="text-sm font-medium text-gray-200 mb-2">Applications Received</h4><div id="applicationsList" class="space-y-3"></div></div>
+        </div>
+
+        <!-- Student -->
         <div id="studentPanel" class="hidden">
-          <h3 class="font-semibold mb-2">Available Jobs</h3>
+          <h4 class="text-sm font-medium text-gray-200 mb-3">Available Jobs</h4>
           <div id="jobsFeed" class="space-y-3"></div>
         </div>
-
       </div>
-    </div>
+    </section>
+
   </div>
 
   <!-- Apply Modal -->
-  <div id="applyModal" class="fixed inset-0 bg-black/60 flex items-center justify-center hidden z-50">
-    <div class="bg-slate-900 p-6 rounded-xl max-w-xl w-full">
-      <h3 class="font-semibold mb-2">Apply for Job</h3>
-      <div id="applyJobTitle" class="text-gray-300 mb-3"></div>
-      <input id="applicantName" class="w-full p-3 rounded-md bg-white/5 mb-2" placeholder="Your name" />
-      <input id="applicantEmail" class="w-full p-3 rounded-md bg-white/5 mb-2" placeholder="Your email" />
-      <textarea id="appMessage" class="w-full p-3 rounded-md bg-white/5 mb-2" placeholder="Short message (why you're fit)"></textarea>
-      <input id="appResumeFile" type="file" accept=".pdf,.docx,.txt" class="mb-3" />
-      <div class="flex gap-2">
-        <button id="submitApplicationBtn" class="btn-grad px-4 py-2 rounded-md">Submit Application</button>
-        <button id="cancelApplyBtn" class="bg-white/5 px-4 py-2 rounded-md">Cancel</button>
+  <div id="applyModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="glass modal-panel modal-panel animate-in">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-semibold">Apply for Job</h3>
+          <div id="applyJobTitle" class="text-xs text-gray-400 mt-1"></div>
+        </div>
+        <div class="flex gap-2">
+          <button id="closeApply" class="btn-ghost">Close</button>
+        </div>
       </div>
-      <p class="text-sm text-gray-400 mt-2">Resume text will be parsed and sent to recruiter for review (demo).</p>
+
+      <div class="mt-4 grid grid-cols-1 gap-3">
+        <input id="applicantName" class="p-3 rounded-md bg-transparent border border-white/6" placeholder="Your name" />
+        <input id="applicantEmail" class="p-3 rounded-md bg-transparent border border-white/6" placeholder="Your email" />
+        <textarea id="appMessage" class="p-3 rounded-md bg-transparent border border-white/6" placeholder="Short message (why you're fit)"></textarea>
+
+        <div>
+          <label class="text-xs text-gray-400">Resume (PDF/DOCX/TXT)</label>
+          <input id="appResumeFile" type="file" accept=".pdf,.docx,.txt" class="mt-2" />
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="submitApplicationBtn" class="btn-primary">Submit Application</button>
+          <button id="cancelApplyBtn" class="btn-ghost">Cancel</button>
+          <div id="applySpinner" class="hidden text-sm text-gray-400 ml-auto">Parsing resume…</div>
+        </div>
+        <div class="text-xs text-gray-400">Parsed resume text is included for recruiter review (demo).</div>
+      </div>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div id="toast" class="fixed bottom-6 right-6 bg-white/5 p-3 rounded-md hidden"></div>
+  <!-- Toasts -->
+  <div id="toastWrap" aria-live="polite" aria-atomic="true"></div>
 
 <script>
-/* ---------------------------
-   Simple client-side "backend" using localStorage
-   Data shape:
-   - users: { id, name, email, role }  (passwords not used in demo)
-   - jobs: { id, title, company, desc, recruiterId, createdAt }
-   - applications: { id, jobId, applicantName, applicantEmail, message, resumeText, createdAt }
-   --------------------------- */
+/* ========= keep demo logic intact + add theme & animations ========= */
 
-const STORE_KEYS = {
-  USERS: 'demo_users_v1',
-  JOBS: 'demo_jobs_v1',
-  APPS: 'demo_apps_v1'
-};
+const STORE_KEYS = { USERS: 'demo_users_v1', JOBS: 'demo_jobs_v1', APPS: 'demo_apps_v1' };
 
-function readStore(key){ try{ return JSON.parse(localStorage.getItem(key) || '[]'); }catch(e){return []} }
-function writeStore(key, data){ localStorage.setItem(key, JSON.stringify(data)); }
+/* ---------- theme toggle ---------- */
+const themeToggle = document.getElementById('themeToggle');
+const savedTheme = localStorage.getItem('ats_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+document.documentElement.setAttribute('data-theme', savedTheme);
+themeToggle.textContent = savedTheme === 'light' ? 'Light' : 'Dark';
+themeToggle.addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  const next = cur === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('ats_theme', next);
+  themeToggle.textContent = next === 'light' ? 'Light' : 'Dark';
+  showToast(`Theme: ${next}`, 'info', 1500);
+});
 
-// Helpers
-function uid(prefix='id'){ return prefix + '-' + Math.random().toString(36).slice(2,10); }
-function showToast(msg, timeout=3000){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'), timeout); }
+/* ---------- toasts (animated) ---------- */
+const toastWrap = document.getElementById('toastWrap');
+function showToast(msg, type='info', timeout=3000){
+  const el = document.createElement('div');
+  el.className = 'toast enter';
+  if(type === 'success') el.style.borderLeft = `4px solid var(--success)`;
+  if(type === 'error') el.style.borderLeft = `4px solid var(--danger)`;
+  el.textContent = msg;
+  toastWrap.prepend(el);
+  setTimeout(()=> { el.style.opacity = '0'; el.style.transform = 'translateX(8px)'; setTimeout(()=> el.remove(), 220); }, timeout);
+}
 
-/* ---------- Auth & UI ---------- */
-let currentUser = null;
-
+/* ---------- existing DOM refs ---------- */
 const demoStudentBtn = document.getElementById('demoStudentBtn');
 const demoRecruiterBtn = document.getElementById('demoRecruiterBtn');
 const demoStudentAlt = document.getElementById('demoStudentAlt');
-
 const showLoginBtn = document.getElementById('showLoginBtn');
 const showRegisterBtn = document.getElementById('showRegisterBtn');
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
-const dashboardArea = document.getElementById('dashboardArea');
 const authArea = document.getElementById('authArea');
-
+const dashboardArea = document.getElementById('dashboardArea');
 const dashTitle = document.getElementById('dashTitle');
 const userRoleBadge = document.getElementById('userRoleBadge');
 const recruiterPanel = document.getElementById('recruiterPanel');
 const studentPanel = document.getElementById('studentPanel');
+const postedJobsList = document.getElementById('postedJobsList');
+const applicationsList = document.getElementById('applicationsList');
+const jobsFeed = document.getElementById('jobsFeed');
 
-document.getElementById('logoutBtn').addEventListener('click', ()=>{ logout(); });
+const postJobBtn = document.getElementById('postJobBtn');
+const jobTitleInput = document.getElementById('jobTitle');
+const jobCompanyInput = document.getElementById('jobCompany');
+const jobDescInput = document.getElementById('jobDesc');
 
-showLoginBtn.addEventListener('click', ()=>{ loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); });
-showRegisterBtn.addEventListener('click', ()=>{ registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); });
+const applyModal = document.getElementById('applyModal');
+const applyJobTitle = document.getElementById('applyJobTitle');
+const applicantName = document.getElementById('applicantName');
+const applicantEmail = document.getElementById('applicantEmail');
+const appMessage = document.getElementById('appMessage');
+const appResumeFile = document.getElementById('appResumeFile');
+const submitApplicationBtn = document.getElementById('submitApplicationBtn');
+const cancelApplyBtn = document.getElementById('cancelApplyBtn');
+const closeApply = document.getElementById('closeApply');
+const applySpinner = document.getElementById('applySpinner');
 
-/* Demo quick logins: create demo users if not present, then log them in */
+let currentUser = null;
+let applyingJobId = null;
+
+/* ---------- interactions ---------- */
+showLoginBtn.addEventListener('click', ()=> { loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); });
+showRegisterBtn.addEventListener('click', ()=> { registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); });
+document.getElementById('regCancel').addEventListener('click', ()=> { registerForm.classList.add('hidden'); loginForm.classList.remove('hidden'); });
+
 demoStudentBtn.addEventListener('click', ()=> loginDemo('student'));
 demoRecruiterBtn.addEventListener('click', ()=> loginDemo('recruiter'));
-demoStudentAlt.addEventListener('click', ()=> loginDemo('student'));
+demoStudentAlt && demoStudentAlt.addEventListener('click', ()=> loginDemo('student'));
+
+/* ---------- demo users & auth ---------- */
+function readStore(key){ try{ return JSON.parse(localStorage.getItem(key) || '[]'); }catch(e){return []} }
+function writeStore(key,data){ localStorage.setItem(key, JSON.stringify(data)); }
+function uid(prefix='id'){ return prefix + '-' + Math.random().toString(36).slice(2,10); }
 
 function ensureDemoUsers(){
   let users = readStore(STORE_KEYS.USERS);
-  // create demo student & recruiter if not exist
-  if(!users.find(u=>u.email==='demo.student@local')){
-    users.push({ id: uid('u'), name: 'Demo Student', email: 'demo.student@local', role: 'student' });
-  }
-  if(!users.find(u=>u.email==='demo.recruiter@local')){
-    users.push({ id: uid('u'), name: 'Demo Recruiter', email: 'demo.recruiter@local', role: 'recruiter' });
-  }
+  if(!users.find(u=>u.email==='demo.student@local')) users.push({ id: uid('u'), name: 'Demo Student', email: 'demo.student@local', role: 'student' });
+  if(!users.find(u=>u.email==='demo.recruiter@local')) users.push({ id: uid('u'), name: 'Demo Recruiter', email: 'demo.recruiter@local', role: 'recruiter' });
   writeStore(STORE_KEYS.USERS, users);
 }
-
 function loginDemo(role){
   ensureDemoUsers();
   const users = readStore(STORE_KEYS.USERS);
-  const user = users.find(u => u.role === role);
-  if(!user) { showToast('Demo user not found'); return; }
+  const user = users.find(u=>u.role===role);
+  if(!user) return showToast('Demo user not found','error');
   currentUser = user;
   localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  showToast(`Logged in as ${user.name}`);
+  showToast(`Logged in as ${user.name}`,'success');
   renderDashboard();
 }
 
-/* Normal register/login (for demo only - passwords are not verified) */
-document.getElementById('registerForm').addEventListener('submit', (e)=>{
+/* ---------- register/login (demo) ---------- */
+registerForm.addEventListener('submit', (e)=>{
   e.preventDefault();
   const name = document.getElementById('regName').value.trim();
   const email = document.getElementById('regEmail').value.trim();
   const role = document.getElementById('regRole').value;
-  if(!name || !email){ showToast('Fill required fields'); return; }
+  if(!name || !email) return showToast('Fill required fields','error');
   let users = readStore(STORE_KEYS.USERS);
-  if(users.find(u=>u.email===email)){ showToast('User already exists — please login'); return; }
+  if(users.find(u=>u.email===email)) return showToast('User exists — login','error');
   const newUser = { id: uid('u'), name, email, role };
   users.push(newUser); writeStore(STORE_KEYS.USERS, users);
   currentUser = newUser; localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  showToast('Registration complete — logged in');
-  renderDashboard();
+  showToast('Registered & logged in','success'); renderDashboard();
 });
 
 loginForm.addEventListener('submit', (e)=>{
   e.preventDefault();
   const email = document.getElementById('loginEmail').value.trim();
   const users = readStore(STORE_KEYS.USERS);
-  const user = users.find(u=>u.email === email);
-  if(!user){ showToast('User not found — please register'); return; }
+  const user = users.find(u=>u.email===email);
+  if(!user) return showToast('User not found — register','error');
   currentUser = user; localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  showToast('Login successful'); renderDashboard();
+  showToast('Login successful','success'); renderDashboard();
 });
 
-/* Restore session if present */
-(function restore(){
-  const saved = localStorage.getItem('currentUser');
-  if(saved){ currentUser = JSON.parse(saved); renderDashboard(); }
-})();
+/* ---------- restore session ---------- */
+(function restore(){ const s = localStorage.getItem('currentUser'); if(s){ currentUser = JSON.parse(s); renderDashboard(); }} )();
 
-/* ---------- Job posting (Recruiter) ---------- */
-document.getElementById('postJobBtn').addEventListener('click', ()=>{
-  const title = document.getElementById('jobTitle').value.trim();
-  const company = document.getElementById('jobCompany').value.trim();
-  const desc = document.getElementById('jobDesc').value.trim();
-  if(!title || !company || !desc){ showToast('Fill all job fields'); return; }
-  const jobs = readStore(STORE_KEYS.JOBS);
-  const job = { id: uid('job'), title, company, desc, recruiterId: currentUser.id, createdAt: Date.now() };
-  jobs.unshift(job);
-  writeStore(STORE_KEYS.JOBS, jobs);
-  // clear
-  document.getElementById('jobTitle').value=''; document.getElementById('jobCompany').value=''; document.getElementById('jobDesc').value='';
-  showToast('Job posted');
-  renderJobsFeed();
-  renderPostedJobs();
+/* ---------- post job ---------- */
+postJobBtn.addEventListener('click', ()=>{
+  const title = jobTitleInput.value.trim(), company = jobCompanyInput.value.trim(), desc = jobDescInput.value.trim();
+  if(!title || !company || !desc) return showToast('Fill all job fields','error');
+  const jobs = readStore(STORE_KEYS.JOBS); const job = { id: uid('job'), title, company, desc, recruiterId: currentUser.id, createdAt: Date.now() };
+  jobs.unshift(job); writeStore(STORE_KEYS.JOBS, jobs);
+  jobTitleInput.value=''; jobCompanyInput.value=''; jobDescInput.value='';
+  showToast('Job posted','success'); renderJobsFeed(); renderPostedJobs();
 });
 
-document.getElementById('refreshJobsBtn').addEventListener('click', ()=>{ renderJobsFeed(); renderPostedJobs(); renderApplications(); });
-
-/* ---------- Jobs feed & apply ---------- */
+/* ---------- render feeds ---------- */
 function renderJobsFeed(){
-  const feed = document.getElementById('jobsFeed');
   const jobs = readStore(STORE_KEYS.JOBS);
-  if(!jobs.length){ feed.innerHTML = '<p class="text-gray-400">No jobs posted yet.</p>'; return; }
-  feed.innerHTML = '';
+  jobsFeed.innerHTML = '';
+  if(!jobs.length) return jobsFeed.innerHTML = '<p class="text-sm text-gray-400">No jobs posted yet.</p>';
   for(const j of jobs){
-    const card = document.createElement('div');
-    card.className = 'job-card glass p-4 rounded-md job-card';
-    card.innerHTML = `
-      <div class="flex justify-between items-start">
-        <div>
-          <h4 class="text-lg font-semibold">${escapeHtml(j.title)}</h4>
-          <p class="text-sm text-gray-300">${escapeHtml(j.company)}</p>
-        </div>
-        <div class="text-xs text-gray-400">${new Date(j.createdAt).toLocaleString()}</div>
-      </div>
-      <p class="text-sm text-gray-300 mt-2">${escapeHtml(j.desc)}</p>
-      <div class="mt-3 flex gap-2">
-        <button data-job="${j.id}" class="applyBtn bg-white/5 px-3 py-1 rounded-md">Apply</button>
-        <button data-job="${j.id}" class="viewBtn bg-white/5 px-3 py-1 rounded-md">View</button>
-      </div>
-    `;
-    feed.appendChild(card);
+    const card = document.createElement('div'); card.className='job-card card-hover glass enter-up p-4';
+    card.innerHTML = `<div class="flex justify-between items-start"><div><h4 class="text-sm font-semibold">${escapeHtml(j.title)}</h4><div class="text-xs text-gray-400 mt-1">${escapeHtml(j.company)}</div></div><div class="text-xs text-gray-400">${new Date(j.createdAt).toLocaleString()}</div></div><p class="text-sm text-gray-300 mt-3">${escapeHtml(j.desc)}</p><div class="mt-3 flex gap-2"><button data-job="${j.id}" class="applyBtn btn-ghost">Apply</button><button data-job="${j.id}" class="viewBtn btn-muted">View</button></div>`;
+    jobsFeed.appendChild(card);
   }
-
-  // attach handlers
-  document.querySelectorAll('.applyBtn').forEach(b=> b.addEventListener('click', (ev)=>{
-    const id = ev.currentTarget.getAttribute('data-job'); openApplyModal(id);
-  }));
-  document.querySelectorAll('.viewBtn').forEach(b=> b.addEventListener('click', (ev)=>{
-    const id = ev.currentTarget.getAttribute('data-job'); viewJobDetails(id);
-  }));
+  document.querySelectorAll('.applyBtn').forEach(b=> b.addEventListener('click', ev=> openApplyModal(ev.currentTarget.getAttribute('data-job'))));
+  document.querySelectorAll('.viewBtn').forEach(b=> b.addEventListener('click', ev=> viewJobDetails(ev.currentTarget.getAttribute('data-job'))));
 }
 
 function renderPostedJobs(){
-  const container = document.getElementById('postedJobsList');
   const jobs = readStore(STORE_KEYS.JOBS).filter(j=> j.recruiterId === currentUser.id);
-  container.innerHTML = '';
-  if(!jobs.length){ container.innerHTML = '<p class="text-gray-400">You have not posted jobs yet.</p>'; return; }
+  postedJobsList.innerHTML = '';
+  if(!jobs.length) return postedJobsList.innerHTML = '<p class="text-sm text-gray-400">You have not posted jobs yet.</p>';
   for(const j of jobs){
-    const el = document.createElement('div');
-    el.className = 'glass p-3 rounded-md';
-    el.innerHTML = `<div class="flex justify-between"><div><strong>${escapeHtml(j.title)}</strong> <div class="text-sm text-gray-300">${escapeHtml(j.company)}</div></div>
-      <div class="text-xs text-gray-400">${new Date(j.createdAt).toLocaleString()}</div></div>
-      <p class="text-sm text-gray-300 mt-2">${escapeHtml(j.desc)}</p>`;
-    container.appendChild(el);
+    const el = document.createElement('div'); el.className='glass p-3 rounded-md';
+    el.innerHTML = `<div class="flex justify-between items-start"><div><strong>${escapeHtml(j.title)}</strong><div class="text-sm text-gray-400">${escapeHtml(j.company)}</div></div><div class="text-xs text-gray-400">${new Date(j.createdAt).toLocaleString()}</div></div><p class="text-sm text-gray-300 mt-2">${escapeHtml(j.desc)}</p>`;
+    postedJobsList.appendChild(el);
   }
 }
 
-/* ---------- Applications ---------- */
 function renderApplications(){
-  const appsContainer = document.getElementById('applicationsList');
   const apps = readStore(STORE_KEYS.APPS).filter(a=>{
     const job = readStore(STORE_KEYS.JOBS).find(j=>j.id===a.jobId);
     return job && job.recruiterId === currentUser.id;
   });
-  appsContainer.innerHTML = '';
-  if(!apps.length){ appsContainer.innerHTML = '<p class="text-gray-400">No applications yet.</p>'; return; }
+  applicationsList.innerHTML=''; if(!apps.length) return applicationsList.innerHTML = '<p class="text-sm text-gray-400">No applications yet.</p>';
   for(const a of apps){
     const job = readStore(STORE_KEYS.JOBS).find(j=>j.id===a.jobId) || {};
-    const el = document.createElement('div');
-    el.className = 'glass p-3 rounded-md';
-    el.innerHTML = `<div class="flex justify-between"><div><strong>${escapeHtml(a.applicantName)}</strong> <div class="text-sm text-gray-300">${escapeHtml(a.applicantEmail)}</div></div>
-      <div class="text-xs text-gray-400">${new Date(a.createdAt).toLocaleString()}</div></div>
-      <div class="text-sm text-gray-300 mt-2"><strong>For:</strong> ${escapeHtml(job.title || '—')}</div>
-      <p class="text-sm text-gray-300 mt-2">${escapeHtml(a.message || '')}</p>
-      <details class="mt-2"><summary class="text-sm text-gray-300">View parsed resume text</summary><pre class="text-xs text-gray-200 whitespace-pre-wrap mt-2">${escapeHtml(a.resumeText || '(no resume)')}</pre></details>
-    `;
-    appsContainer.appendChild(el);
+    const el = document.createElement('div'); el.className='glass p-3 rounded-md';
+    el.innerHTML = `<div class="flex justify-between"><div><strong>${escapeHtml(a.applicantName)}</strong><div class="text-xs text-gray-400">${escapeHtml(a.applicantEmail)}</div></div><div class="text-xs text-gray-400">${new Date(a.createdAt).toLocaleString()}</div></div><div class="text-sm text-gray-300 mt-2"><strong>For:</strong> ${escapeHtml(job.title || '—')}</div><p class="text-sm text-gray-300 mt-2">${escapeHtml(a.message || '')}</p><details class="mt-2"><summary class="text-sm text-gray-300">View parsed resume text</summary><pre class="text-xs text-gray-200 whitespace-pre-wrap mt-2">${escapeHtml(a.resumeText || '(no resume)')}</pre></details>`;
+    applicationsList.appendChild(el);
   }
 }
 
-/* ---------- Apply modal flow ---------- */
-let applyingJobId = null;
+/* ---------- apply modal ---------- */
 function openApplyModal(jobId){
-  if(!currentUser || currentUser.role !== 'student'){ showToast('Please login as a student to apply'); return; }
+  if(!currentUser || currentUser.role !== 'student') return showToast('Please login as a student to apply','error');
   applyingJobId = jobId;
   const job = readStore(STORE_KEYS.JOBS).find(j=>j.id===jobId);
-  document.getElementById('applyJobTitle').textContent = job ? `${job.title} — ${job.company}` : 'Apply';
-  document.getElementById('applicantName').value = currentUser.name || '';
-  document.getElementById('applicantEmail').value = currentUser.email || '';
-  document.getElementById('appMessage').value = '';
-  document.getElementById('appResumeFile').value = '';
-  document.getElementById('applyModal').classList.remove('hidden');
+  applyJobTitle.textContent = job ? `${job.title} — ${job.company}` : 'Apply';
+  applicantName.value = currentUser.name || ''; applicantEmail.value = currentUser.email || '';
+  appMessage.value=''; appResumeFile.value='';
+  applyModal.classList.remove('hidden'); applyModal.setAttribute('aria-hidden', 'false');
+  document.querySelector('.modal-panel').classList.add('animate-in');
+  document.addEventListener('keydown', escCloseApply);
 }
+function closeApplyModal(){ applyModal.classList.add('hidden'); applyModal.setAttribute('aria-hidden','true'); applyingJobId=null; document.removeEventListener('keydown', escCloseApply); }
+function escCloseApply(e){ if(e.key === 'Escape') closeApplyModal(); }
 
-document.getElementById('cancelApplyBtn').addEventListener('click', ()=>{ applyingJobId=null; document.getElementById('applyModal').classList.add('hidden'); });
+closeApply.addEventListener('click', closeApplyModal);
+cancelApplyBtn.addEventListener('click', closeApplyModal);
 
-document.getElementById('submitApplicationBtn').addEventListener('click', async ()=>{
-  const name = document.getElementById('applicantName').value.trim();
-  const email = document.getElementById('applicantEmail').value.trim();
-  const message = document.getElementById('appMessage').value.trim();
-  const fileInput = document.getElementById('appResumeFile');
-  if(!name || !email){ showToast('Please enter name and email'); return; }
-  // parse file if present
+submitApplicationBtn.addEventListener('click', async ()=>{
+  const name = applicantName.value.trim(), email = applicantEmail.value.trim(), message = appMessage.value.trim();
+  if(!name || !email) return showToast('Please enter name and email','error');
+  applySpinner.classList.remove('hidden'); submitApplicationBtn.disabled = true;
   let resumeText = '';
-  if(fileInput.files && fileInput.files[0]){
-    try{
-      resumeText = await parseFile(fileInput.files[0]);
-    }catch(err){
-      console.error(err);
-      showToast('Failed to parse resume, you can still submit.');
-    }
+  if(appResumeFile.files && appResumeFile.files[0]){
+    try{ resumeText = await parseFile(appResumeFile.files[0]); } catch(err){ console.error(err); showToast('Failed to parse resume, submitting without parsed text','error'); }
   }
-  const apps = readStore(STORE_KEYS.APPS);
-  const app = { id: uid('app'), jobId: applyingJobId, applicantName: name, applicantEmail: email, message, resumeText, createdAt: Date.now() };
-  apps.unshift(app);
-  writeStore(STORE_KEYS.APPS, apps);
-  showToast('Application submitted');
-  document.getElementById('applyModal').classList.add('hidden');
-  applyingJobId = null;
-  // notify recruiter visually if they are logged in in another tab (simple approach: set a flag)
+  const apps = readStore(STORE_KEYS.APPS); const app = { id: uid('app'), jobId: applyingJobId, applicantName: name, applicantEmail: email, message, resumeText, createdAt: Date.now() };
+  apps.unshift(app); writeStore(STORE_KEYS.APPS, apps);
+  showToast('Application submitted','success');
+  applySpinner.classList.add('hidden'); submitApplicationBtn.disabled = false; closeApplyModal();
   localStorage.setItem('recentAppNotification', JSON.stringify({ jobId: app.jobId, time: Date.now() }));
-  // refresh recruiter view if current user is recruiter
-  if(currentUser && currentUser.role === 'recruiter'){ renderApplications(); }
+  if(currentUser && currentUser.role === 'recruiter') renderApplications();
 });
 
-/* ---------- Utility: view details (student) ---------- */
-function viewJobDetails(jobId){
-  const j = readStore(STORE_KEYS.JOBS).find(x=>x.id===jobId);
-  if(!j){ showToast('Job not found'); return; }
-  alert(`Job: ${j.title}\nCompany: ${j.company}\n\n${j.desc}`);
-}
-
-/* ---------- Parsing files (pdf, docx, txt) ---------- */
+/* ---------- parse files (pdf/docx/txt) ---------- */
 async function parseFile(file){
   const ext = file.name.split('.').pop().toLowerCase();
-  if(ext === 'txt'){
-    return await file.text();
-  }else if(ext === 'pdf'){
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let text = '';
-    for(let i=1;i<=pdf.numPages;i++){
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      text += content.items.map(it=>it.str).join(' ') + '\n';
-    }
-    return text;
-  }else if(ext === 'docx'){
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    return result.value;
-  } else {
-    throw new Error('Unsupported file type');
-  }
+  if(ext === 'txt') return await file.text();
+  else if(ext === 'pdf'){ const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise; let text=''; for(let i=1;i<=pdf.numPages;i++){ const page = await pdf.getPage(i); const content = await page.getTextContent(); text += content.items.map(it=>it.str).join(' ') + '\n'; } return text; }
+  else if(ext === 'docx'){ const arrayBuffer = await file.arrayBuffer(); const result = await mammoth.extractRawText({ arrayBuffer }); return result.value; }
+  else throw new Error('Unsupported file type');
 }
 
-/* ---------- Simple helpers ---------- */
+/* ---------- utilities ---------- */
 function escapeHtml(s=''){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 
-/* ---------- Render dashboard ---------- */
+/* ---------- render/initialization ---------- */
 function renderDashboard(){
   if(!currentUser) return;
-  authArea.classList.add('hidden');
-  dashboardArea.classList.remove('hidden');
-  dashTitle.textContent = `Welcome, ${currentUser.name}`;
-  userRoleBadge.textContent = currentUser.role;
-  if(currentUser.role === 'recruiter'){
-    recruiterPanel.classList.remove('hidden');
-    studentPanel.classList.add('hidden');
-    renderPostedJobs();
-    renderApplications();
-  } else {
-    recruiterPanel.classList.add('hidden');
-    studentPanel.classList.remove('hidden');
-    renderJobsFeed();
-  }
+  authArea.classList.add('hidden'); dashboardArea.classList.remove('hidden');
+  dashTitle.textContent = `Welcome, ${currentUser.name}`; userRoleBadge.textContent = currentUser.role;
+  if(currentUser.role === 'recruiter'){ recruiterPanel.classList.remove('hidden'); studentPanel.classList.add('hidden'); renderPostedJobs(); renderApplications(); }
+  else { recruiterPanel.classList.add('hidden'); studentPanel.classList.remove('hidden'); renderJobsFeed(); }
 }
 
-/* ---------- Logout ---------- */
-function logout(){
-  currentUser = null;
-  localStorage.removeItem('currentUser');
-  authArea.classList.remove('hidden');
-  dashboardArea.classList.add('hidden');
-  showToast('Logged out');
-}
+/* ---------- session/seed ---------- */
+(function seedSampleJobs(){ ensureDemoUsers(); const jobs = readStore(STORE_KEYS.JOBS); if(jobs.length===0){ const recruiters = readStore(STORE_KEYS.USERS).filter(u=>u.role==='recruiter'); const r = recruiters[0] || { id: uid('u'), name:'Demo Recruiter' }; const sample = [ { id: uid('job'), title: 'Software Engineer', company:'Tech Corp', desc:'Build web apps. 2+ years experience.', recruiterId: r.id, createdAt: Date.now()-86400000 }, { id: uid('job'), title: 'Data Analyst', company:'Data Inc', desc:'Analyze datasets and build dashboards.', recruiterId: r.id, createdAt: Date.now()-3600000 } ]; writeStore(STORE_KEYS.JOBS, sample); } })();
 
-/* ---------- Initial seed: (optional) create some sample jobs ---------- */
-(function seedSampleJobs(){
-  ensureDemoUsers();
-  const jobs = readStore(STORE_KEYS.JOBS);
-  if(jobs.length === 0){
-    const recruiters = readStore(STORE_KEYS.USERS).filter(u=>u.role==='recruiter');
-    const r = recruiters[0] || { id: uid('u'), name:'Demo Recruiter' };
-    const sample = [
-      { id: uid('job'), title: 'Software Engineer', company: 'Tech Corp', desc: 'Build web apps. 2+ years experience.', recruiterId: r.id, createdAt: Date.now() - 86400000 },
-      { id: uid('job'), title: 'Data Analyst', company: 'Data Inc', desc: 'Analyze datasets and build dashboards.', recruiterId: r.id, createdAt: Date.now() - 3600000 }
-    ];
-    writeStore(STORE_KEYS.JOBS, sample);
-  }
-})();
+window.addEventListener('storage', (e)=>{ if(e.key === 'recentAppNotification'){ if(currentUser && currentUser.role === 'recruiter'){ renderApplications(); showToast('New application received','info',4000); } if(currentUser && currentUser.role === 'student'){ renderJobsFeed(); } } });
 
-/* ---------- Listen for cross-tab notifications (simple) ---------- */
-window.addEventListener('storage', (e)=>{
-  if(e.key === 'recentAppNotification'){
-    // If recruiter is logged in, refresh their view
-    if(currentUser && currentUser.role === 'recruiter'){ renderApplications(); showToast('New application received', 4000); }
-    // students refresh job feed
-    if(currentUser && currentUser.role === 'student'){ renderJobsFeed(); }
-  }
-});
-
-/* ---------- Final initial render ---------- */
-renderJobsFeed();
+(function restore(){ const s = localStorage.getItem('currentUser'); if(s){ currentUser = JSON.parse(s); renderDashboard(); } else { renderJobsFeed(); } })();
 
 </script>
 </body>
