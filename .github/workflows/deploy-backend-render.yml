@@ -2,10 +2,12 @@ name: Trigger Render backend deploy
 
 on:
   push:
-    paths:
-      - 'backend/**'
     branches:
       - main
+    paths:
+      - 'backend/**'
+      - 'ats-scoring/backend/**'
+      - '.github/workflows/deploy-backend-render.yml'
 
 jobs:
   deploy-backend:
@@ -14,36 +16,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Trigger Render deploy
+      - name: Trigger Render deploy (API)
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
         run: |
-          echo "Triggering Render deploy for service $RENDER_SERVICE_ID"
-          curl -s -X POST "https://api.render.com/deploys" \
-            -H "Authorization: Bearer $RENDER_API_KEY" \
+          if [ -z "${RENDER_API_KEY}" ] || [ -z "${RENDER_SERVICE_ID}" ]; then
+            echo "ERROR: Render secrets not set. Please add RENDER_API_KEY and RENDER_SERVICE_ID to repo secrets."
+            exit 1
+          fi
+
+          echo "Triggering Render deploy for service ${RENDER_SERVICE_ID}"
+          response=$(curl -s -w "\n%{http_code}" -X POST "https://api.render.com/deploys" \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
             -H "Content-Type: application/json" \
-            -d "{\"serviceId\":\"${RENDER_SERVICE_ID}\",\"clearCache\":true}" \
-            | tee render-deploy-response.json
-          echo "Render response:" && cat render-deploy-response.json
-name: Deploy Backend to Render
+            -d "{\"serviceId\":\"${RENDER_SERVICE_ID}\",\"clearCache\":true}")
 
-on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'ats-scoring/backend/**'
-      - '.github/workflows/deploy-backend-render.yml'
+          # Split body and status
+          http_body=$(echo "$response" | sed '$d')
+          http_status=$(echo "$response" | tail -n1)
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+          echo "HTTP status: $http_status"
+          echo "Render response body:"
+          echo "$http_body"
 
-      - name: Deploy to Render
-        uses: johnbeynon/render-deploy-action@v0.0.8
-        with:
-          service-id: ${{ secrets.RENDER_SERVICE_ID }}
-          api-key: ${{ secrets.RENDER_API_KEY }}
+          if [ "$http_status" -ge 200 ] && [ "$http_status" -lt 300 ]; then
+            echo "Render deploy triggered successfully."
+          else
+            echo "Render deploy failed (status $http_status)."
+            exit 1
+          fi
