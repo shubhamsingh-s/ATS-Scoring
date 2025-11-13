@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>ATS Scoring Platform</title>
     <!-- Inter Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- PDF.js for PDF parsing -->
@@ -15,9 +15,7 @@
     <!-- Mammoth for DOCX parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
         .glass {
             -webkit-backdrop-filter: blur(16px) saturate(180%);
             backdrop-filter: blur(16px) saturate(180%);
@@ -30,84 +28,39 @@
             background-color: rgba(17, 25, 40, 0.75);
             border: 1px solid rgba(255, 255, 255, 0.125);
         }
-        .gradient-bg {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        }
-        .btn-gradient {
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-        }
-        .hover-lift {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .hover-lift:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .chip-matched {
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid rgba(34, 197, 94, 0.5);
-        }
-        .chip-missing {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid rgba(239, 68, 68, 0.5);
-        }
-        .spinner {
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 2px solid #fff;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .btn-gradient { background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); }
+        .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .hover-lift:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
+        .chip-matched { background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.5); }
+        .chip-missing { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.5); }
+        .spinner { border: 2px solid rgba(255,255,255,0.3); border-radius:50%; border-top:2px solid #fff; width:20px; height:20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0%{transform:rotate(0deg);}100%{transform:rotate(360deg);} }
     </style>
 </head>
 <body class="gradient-bg text-white min-h-screen flex items-center justify-center p-4">
     <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Left Section: Feature Card -->
         <div class="glass glass-dark rounded-2xl p-8 hover-lift">
-            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                ATS Scoring Platform
-            </h1>
-            <p class="text-gray-300 mb-6">
-                Elevate your job search with AI-powered resume optimization and smart keyword matching.
-            </p>
+            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">ATS Scoring Platform</h1>
+            <p class="text-gray-300 mb-6">Elevate your job search with AI-powered resume optimization and smart keyword matching.</p>
             <div class="space-y-4 mb-8">
                 <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                    </div>
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center"><span class="text-white font-bold">✓</span></div>
                     <span>Smart Keyword Matching</span>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                    </div>
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center"><span class="text-white font-bold">✓</span></div>
                     <span>Resume Builder with Export</span>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                    </div>
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center"><span class="text-white font-bold">✓</span></div>
                     <span>Recruiter Tools & Insights</span>
                 </div>
             </div>
             <div class="flex space-x-4">
-                <button id="tryDemoBtn" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity">
-                    Try Demo
-                </button>
-                <button id="whatsNewBtn" class="glass glass-dark text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors">
-                    What’s New
-                </button>
+                <button id="tryDemoBtn" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity">Try Demo</button>
+                <button id="whatsNewBtn" class="glass glass-dark text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors">What’s New</button>
             </div>
         </div>
 
@@ -119,34 +72,24 @@
                     <button id="loginTab" class="px-4 py-2 rounded-l-lg bg-white/20 text-white font-semibold">Login</button>
                     <button id="registerTab" class="px-4 py-2 rounded-r-lg bg-transparent text-gray-300 font-semibold">Register</button>
                 </div>
+
                 <form id="loginForm" class="space-y-4">
-                    <div>
-                        <label for="loginEmail" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
-                        <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required>
-                    </div>
-                    <div>
-                        <label for="loginPassword" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
-                        <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required>
-                    </div>
+                    <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required>
+                    <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required>
                     <button type="submit" class="w-full btn-gradient text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity">Login</button>
                 </form>
+
                 <form id="registerForm" class="space-y-4 hidden">
-                    <div>
-                        <label for="registerName" class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
-                        <input type="text" id="registerName" placeholder="Full Name" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required>
-                    </div>
-                    <div>
-                        <label for="registerEmail" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
-                        <input type="email" id="registerEmail" placeholder="Email" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required>
-                    </div>
-                    <div>
-                        <label for="registerPassword" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
-                        <input type="password" id="registerPassword" placeholder="Password" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required>
-                    </div>
+                    <input type="text" id="registerName" placeholder="Full Name" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required>
+                    <input type="email" id="registerEmail" placeholder="Email" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required>
+                    <input type="password" id="registerPassword" placeholder="Password" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required>
                     <button type="submit" class="w-full btn-gradient text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity">Register</button>
                 </form>
+
                 <div class="mt-4 text-center">
                     <button id="demoLoginBtn" class="text-blue-400 hover:underline">Login as Demo User</button>
+                    <!-- Visible demo credentials hint -->
+                    <p class="text-xs text-gray-400 mt-2">Demo credentials: <span class="text-yellow-300">admin@ats-scoring.com / admin123</span></p>
                 </div>
             </div>
 
@@ -170,18 +113,13 @@
                         <p class="text-sm text-gray-300">Find opportunities</p>
                     </div>
                 </div>
+
                 <!-- Scanner Modal -->
                 <div id="scannerModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden">
                     <div class="glass glass-dark rounded-2xl p-8 max-w-md w-full mx-4">
                         <h3 class="text-xl font-bold mb-4">ATS Scanner</h3>
-                        <div class="mb-4">
-                            <label for="resumeFile" class="block text-sm font-medium text-gray-300 mb-1">Upload Resume</label>
-                            <input type="file" id="resumeFile" accept=".pdf,.docx,.txt" class="w-full p-3 rounded-lg bg-white/10 border border-white/20">
-                        </div>
-                        <div class="mb-4">
-                            <label for="jobDesc" class="block text-sm font-medium text-gray-300 mb-1">Job Description</label>
-                            <textarea id="jobDesc" placeholder="Paste job description here..." class="w-full p-3 rounded-lg bg-white/10 border border-white/20 h-32 resize-none"></textarea>
-                        </div>
+                        <input type="file" id="resumeFile" accept=".pdf,.docx,.txt" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 mb-4">
+                        <textarea id="jobDesc" placeholder="Paste job description here..." class="w-full p-3 rounded-lg bg-white/10 border border-white/20 mb-4 h-32 resize-none"></textarea>
                         <button id="scanBtn" class="w-full btn-gradient text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center">
                             <span id="scanText">Scan Resume</span>
                             <div id="scanSpinner" class="spinner ml-2 hidden"></div>
@@ -193,6 +131,7 @@
                         <button onclick="closeScanner()" class="mt-4 text-gray-400 hover:underline">Close</button>
                     </div>
                 </div>
+
                 <!-- Resume Builder Modal -->
                 <div id="resumeModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden">
                     <div class="glass glass-dark rounded-2xl p-8 max-w-md w-full mx-4">
@@ -203,6 +142,7 @@
                         <button onclick="closeResume()" class="mt-4 text-gray-400 hover:underline">Close</button>
                     </div>
                 </div>
+
                 <!-- Jobs Modal -->
                 <div id="jobsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden">
                     <div class="glass glass-dark rounded-2xl p-8 max-w-md w-full mx-4">
@@ -228,59 +168,17 @@
         </div>
     </div>
 
-    <!-- Contact Section -->
-    <div class="mt-12 glass glass-dark rounded-2xl p-8 hover-lift max-w-4xl mx-auto">
-        <h2 class="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            Contact Us
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="text-center">
-                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
-                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
-                    </svg>
-                </div>
-                <h3 class="font-semibold mb-2">Email</h3>
-                <p class="text-gray-300">shubham.s.45665@gmail.com</p>
-            </div>
-            <div class="text-center">
-                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <h3 class="font-semibold mb-2">Address</h3>
-                <p class="text-gray-300">Lucknow</p>
-            </div>
-            <div class="text-center">
-                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
-                    </svg>
-                </div>
-                <h3 class="font-semibold mb-2">Phone</h3>
-                <p class="text-gray-300">9044845115</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="mt-8 text-center text-gray-400">
-        <p>&copy; ATS 2025. All rights reserved.</p>
-    </footer>
-
     <!-- Toast Notifications -->
     <div id="toast" class="fixed bottom-4 right-4 glass glass-dark rounded-lg p-4 hidden">
         <p id="toastMessage"></p>
     </div>
 
     <script>
-        // Global state
+        // ---------- Global state ----------
         let isLoggedIn = false;
         let user = null;
 
-        // DOM elements
+        // ---------- DOM elements ----------
         const authSection = document.getElementById('authSection');
         const dashboardSection = document.getElementById('dashboardSection');
         const loginTab = document.getElementById('loginTab');
@@ -295,7 +193,7 @@
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toastMessage');
 
-        // Tab switching
+        // ---------- Tab switching ----------
         loginTab.addEventListener('click', () => {
             loginTab.classList.add('bg-white/20');
             loginTab.classList.remove('bg-transparent', 'text-gray-300');
@@ -317,7 +215,7 @@
         // API base URL - change this to your backend URL
         const API_BASE = (window.__API_BASE_URL || 'http://localhost:5000') + '/api';
 
-        // Check for existing session on page load
+        // ---------- Session restore ----------
         window.addEventListener('load', () => {
             const token = localStorage.getItem('token');
             const userData = localStorage.getItem('user');
@@ -334,33 +232,24 @@
             }
         });
 
-        // Login form
+        // ---------- Login ----------
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-
-            if (!email || !password) {
-                showToast('Please fill all fields.');
-                return;
-            }
+            if (!email || !password) { showToast('Please fill all fields.'); return; }
 
             try {
                 const response = await fetch(`${API_BASE}/auth/login`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password }),
                 });
-
                 const data = await response.json();
-
                 if (response.ok) {
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    isLoggedIn = true;
-                    user = data.user;
+                    isLoggedIn = true; user = data.user;
                     showToast('Login successful!');
                     showDashboard();
                 } else {
@@ -372,34 +261,24 @@
             }
         });
 
-        // Register form
+        // ---------- Register ----------
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('registerName').value;
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
-
-            if (!name || !email || !password) {
-                showToast('Please fill all fields.');
-                return;
-            }
-
+            if (!name || !email || !password) { showToast('Please fill all fields.'); return; }
             try {
                 const response = await fetch(`${API_BASE}/auth/register`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password, role: 'student' }),
                 });
-
                 const data = await response.json();
-
                 if (response.ok) {
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    isLoggedIn = true;
-                    user = data.user;
+                    isLoggedIn = true; user = data.user;
                     showToast('Account created and logged in!');
                     showDashboard();
                 } else {
@@ -411,99 +290,83 @@
             }
         });
 
-        // Demo login - uses admin credentials
+        // ---------- Demo login (tries backend then falls back to local demo) ----------
         demoLoginBtn.addEventListener('click', async () => {
+            const demoCredentials = { email: 'admin@ats-scoring.com', password: 'admin123' };
+
+            // 1) Try real backend login first
             try {
                 const response = await fetch(`${API_BASE}/auth/login`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: 'admin@ats-scoring.com',
-                        password: 'admin123'
-                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(demoCredentials),
                 });
 
-                const data = await response.json();
-
                 if (response.ok) {
+                    const data = await response.json();
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    isLoggedIn = true;
-                    user = data.user;
-                    showToast('Logged in as demo user!');
+                    isLoggedIn = true; user = data.user;
+                    showToast('Logged in as demo user (backend).');
                     showDashboard();
+                    return;
                 } else {
-                    showToast('Demo login failed. Please register an account.');
+                    // backend responded but not OK -> log and continue to fallback
+                    const text = await response.text().catch(() => 'no-body');
+                    console.warn('Backend demo login failed (non-OK). Response:', text);
                 }
-            } catch (error) {
-                console.error('Demo login error:', error);
-                showToast('Network error. Please try again.');
+            } catch (err) {
+                console.warn('Backend unreachable for demo login, falling back to client demo:', err);
             }
+
+            // 2) Client-side fallback (local demo session)
+            const fakeToken = 'demo-token-' + Math.random().toString(36).slice(2);
+            const demoUser = {
+                id: 'demo-user',
+                name: 'Demo Admin',
+                email: demoCredentials.email,
+                role: 'admin',
+                demo: true
+            };
+            localStorage.setItem('token', fakeToken);
+            localStorage.setItem('user', JSON.stringify(demoUser));
+            isLoggedIn = true; user = demoUser;
+            showToast('Logged in as demo user (local).');
+            showDashboard();
         });
 
-        // Logout
+        // ---------- Logout ----------
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            isLoggedIn = false;
-            user = null;
+            isLoggedIn = false; user = null;
             showToast('Logged out successfully.');
             showAuth();
         });
 
-        // Show dashboard
+        // ---------- UI helpers ----------
         function showDashboard() {
             authSection.classList.add('hidden');
             dashboardSection.classList.remove('hidden');
         }
-
-        // Show auth
         function showAuth() {
             dashboardSection.classList.add('hidden');
             authSection.classList.remove('hidden');
         }
 
-        // Open scanner
-        function openScanner() {
-            scannerModal.classList.remove('hidden');
-        }
+        // ---------- Modal open/close helpers ----------
+        function openScanner() { scannerModal.classList.remove('hidden'); }
+        function closeScanner() { scannerModal.classList.add('hidden'); document.getElementById('scanResults').classList.add('hidden'); }
+        function buildResume() { resumeModal.classList.remove('hidden'); }
+        function closeResume() { resumeModal.classList.add('hidden'); }
+        function browseJobs() { jobsModal.classList.remove('hidden'); }
+        function closeJobs() { jobsModal.classList.add('hidden'); }
 
-        // Close scanner
-        function closeScanner() {
-            scannerModal.classList.add('hidden');
-            document.getElementById('scanResults').classList.add('hidden');
-        }
-
-        // Open resume builder
-        function buildResume() {
-            resumeModal.classList.remove('hidden');
-        }
-
-        // Close resume builder
-        function closeResume() {
-            resumeModal.classList.add('hidden');
-        }
-
-        // Open jobs
-        function browseJobs() {
-            jobsModal.classList.remove('hidden');
-        }
-
-        // Close jobs
-        function closeJobs() {
-            jobsModal.classList.add('hidden');
-        }
-
-        // Scan resume
+        // ---------- Scanner logic ----------
         document.getElementById('scanBtn').addEventListener('click', async () => {
             const fileInput = document.getElementById('resumeFile');
             const jobDesc = document.getElementById('jobDesc').value;
-            if (!fileInput.files[0] || !jobDesc) {
-                showToast('Please upload a resume and enter job description.');
-                return;
-            }
+            if (!fileInput.files[0] || !jobDesc) { showToast('Please upload a resume and enter job description.'); return; }
 
             document.getElementById('scanText').classList.add('hidden');
             document.getElementById('scanSpinner').classList.remove('hidden');
@@ -512,7 +375,7 @@
                 const resumeText = await parseFile(fileInput.files[0]);
                 const keywords = extractKeywords(jobDesc);
                 const matched = keywords.filter(k => resumeText.toLowerCase().includes(k.toLowerCase()));
-                const score = Math.round((matched.length / keywords.length) * 100);
+                const score = Math.round((matched.length / (keywords.length || 1)) * 100);
 
                 document.getElementById('matchScore').textContent = score;
                 const chipsContainer = document.getElementById('keywordChips');
@@ -527,15 +390,15 @@
                 document.getElementById('scanResults').classList.remove('hidden');
                 showToast(`Scan complete! Match score: ${score}%`);
             } catch (error) {
-                showToast('Error parsing file. Please try again.');
                 console.error(error);
+                showToast('Error parsing file. Please try again.');
             } finally {
                 document.getElementById('scanText').classList.remove('hidden');
                 document.getElementById('scanSpinner').classList.add('hidden');
             }
         });
 
-        // Parse file
+        // ---------- File parsing ----------
         async function parseFile(file) {
             const fileType = file.name.split('.').pop().toLowerCase();
             if (fileType === 'pdf') {
@@ -559,20 +422,27 @@
             }
         }
 
-        // Extract keywords (simple split by spaces, can be improved)
+        // ---------- Simple keyword extractor ----------
         function extractKeywords(text) {
-            return text.toLowerCase().split(/\s+/).filter(word => word.length > 2).slice(0, 20); // Limit to 20 for demo
+            // Remove punctuation, split, filter short words, dedupe and limit
+            const words = text.replace(/[^\w\s]/g, ' ').toLowerCase().split(/\s+/).filter(Boolean);
+            const filtered = words.filter(w => w.length > 2);
+            // dedupe preserving order
+            const seen = new Set();
+            const dedup = [];
+            for (const w of filtered) {
+                if (!seen.has(w)) { seen.add(w); dedup.push(w); }
+                if (dedup.length >= 20) break;
+            }
+            return dedup;
         }
 
-        // Export resume
+        // ---------- Export resume ----------
         function exportResume(format) {
             const content = document.getElementById('resumeContent').value;
-            if (!content) {
-                showToast('Please enter resume content.');
-                return;
-            }
+            if (!content) { showToast('Please enter resume content.'); return; }
             if (format === 'pdf') {
-                // Simple PDF export (in real app, use jsPDF)
+                // Basic blob-based PDF placeholder — for production use jsPDF or server render
                 const blob = new Blob([content], { type: 'application/pdf' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -593,15 +463,15 @@
             }
         }
 
-        // Show toast
+        // ---------- Toast ----------
         function showToast(message) {
             toastMessage.textContent = message;
             toast.classList.remove('hidden');
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
-        // Initialize
-        showDashboard();
+        // Initialize UI state
+        showAuth();
     </script>
 </body>
 </html>
