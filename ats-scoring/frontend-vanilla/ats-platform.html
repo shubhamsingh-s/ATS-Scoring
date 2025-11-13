@@ -246,7 +246,7 @@
         });
 
         // API base URL - change this to your backend URL
-        const API_BASE = 'https://your-backend-url.com'; // Update this with your actual backend URL
+        const API_BASE = (window.__API_BASE_URL || 'http://localhost:5000') + '/api';
 
         // Check for existing session on page load
         window.addEventListener('load', () => {
