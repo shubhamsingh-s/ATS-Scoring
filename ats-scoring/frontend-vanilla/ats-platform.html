@@ -44,7 +44,16 @@
     .score-med{ background: rgba(249,115,22,0.07); color:#f97316; border:1px solid rgba(249,115,22,0.18); }
     .score-low{ background: rgba(239,68,68,0.08); color:var(--danger); border:1px solid rgba(239,68,68,0.12); }
     .highlight{ background: rgba(99,102,241,0.12); padding:2px 4px; border-radius:4px; }
-    @media (max-width:900px){ body{ padding:12px } }
+    /* NEW: resume box styles */
+    .resume-box { border-radius:12px; border:1px solid rgba(255,255,255,0.06); padding:12px; background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent); display:flex; gap:12px; }
+    .resume-left, .resume-right { flex:1; min-width:0; }
+    .upload-area { border:2px dashed rgba(255,255,255,0.06); border-radius:10px; padding:18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; background:rgba(255,255,255,0.01); transition: background .12s, border-color .12s; }
+    .upload-area:hover { background: rgba(255,255,255,0.02); border-color: rgba(99,102,241,0.16); }
+    .upload-hint { color:var(--muted); font-size:13px; text-align:center; }
+    .or-divider { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px; }
+    .textarea-paste { width:100%; min-height:140px; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:inherit; resize:vertical; }
+    .resume-actions { display:flex; gap:8px; margin-top:8px; }
+    @media (max-width:900px){ .resume-box { flex-direction:column; } }
   </style>
 </head>
 <body>
@@ -66,7 +75,7 @@
       </div>
 
       <div class="mt-6">
-        <h4 class="text-sm font-medium text-gray-200 mb-2">Student quick tools</h4>
+        <h4 class="small font-medium text-gray-200 mb-2">Student quick tools</h4>
         <div class="grid grid-cols-1 gap-3">
           <button id="openResumeMakerBtn" class="btn-ghost w-full">Open Resume Maker</button>
           <button id="uploadResumeBtn" class="btn-ghost w-full">Upload Existing Resume (PDF/DOCX/TXT)</button>
@@ -74,12 +83,12 @@
             <input id="quickSearchInput" placeholder="Quick job search (keywords)" class="p-2 rounded-md bg-transparent border border-white/6 w-full" />
             <button id="quickSearchBtn" class="btn-primary">Search</button>
           </div>
-          <div class="small mt-2">Tip: Use Resume Maker to craft a resume, then try "Score my resume" on any job in the feed.</div>
+          <div class="small mt-2">Tip: Use the resume box to upload or paste your resume — scoring & search use this text.</div>
         </div>
       </div>
     </section>
 
-    <!-- Right: Auth / Dashboard -->
+    <!-- Right: Auth + Dashboard -->
     <section class="glass p-6">
       <div id="authArea">
         <div class="flex items-center justify-between mb-4">
@@ -150,19 +159,48 @@
           </div>
         </div>
 
-        <!-- Student panel -->
-        <div id="studentPanel" class="hidden">
-          <div class="flex gap-3 mb-4 items-center">
-            <input id="studentResumeText" placeholder="(Optional) Paste your resume text here to enable instant scoring" class="p-3 rounded-md bg-transparent border border-white/6 w-full" />
-            <button id="pasteResumeBtn" class="btn-ghost">Use created resume</button>
-          </div>
+        <!-- Student panel with professional resume box -->
+        <div id="studentPanel" class="hidden space-y-4">
 
-          <div class="flex items-center gap-3 mb-3">
+          <!-- NEW: Professional Resume Box -->
+          <div class="resume-box">
+            <!-- Left: file upload area -->
+            <div class="resume-left">
+              <div class="small mb-2">Upload Resume</div>
+              <div id="uploadArea" class="upload-area" tabindex="0">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" class="opacity-80"><path d="M12 3v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 7l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="upload-hint">Drag & drop your resume here, or click to select a file.</div>
+                <div class="small text-gray-400">Supported: PDF, DOCX, TXT</div>
+                <input id="hiddenFileInput" type="file" accept=".pdf,.docx,.txt" style="display:none" />
+                <div class="resume-actions">
+                  <button id="selectFileBtn" class="btn-ghost">Choose file</button>
+                  <button id="clearUploadedBtn" class="btn-ghost">Clear</button>
+                </div>
+                <div id="uploadedFileName" class="small mt-2 text-gray-300"></div>
+              </div>
+            </div>
+
+            <!-- Right: paste / resume maker integration -->
+            <div class="resume-right">
+              <div class="small mb-2">Paste or Build Resume (optional)</div>
+              <textarea id="studentResumeText" class="textarea-paste" placeholder="Paste resume text here (optional). If present, this will be used for ATS scoring & job search." ></textarea>
+              <div class="resume-actions">
+                <button id="useCreatedResumeBtn" class="btn-ghost">Use latest created resume</button>
+                <button id="openResumeMakerBtn2" class="btn-ghost">Open Resume Maker</button>
+                <button id="savePastedResumeBtn" class="btn-primary">Save as Resume</button>
+              </div>
+              <div class="small mt-2 text-gray-400">Saved resumes are available when you apply and for scoring. You can also export resume as PDF in the Resume Maker.</div>
+            </div>
+          </div>
+          <!-- end resume box -->
+
+          <!-- Job search block -->
+          <div class="flex items-center gap-3 mt-2">
             <input id="jobSearchInput" placeholder="Search jobs by title/company/keywords" class="p-2 rounded-md bg-transparent border border-white/6 w-full" />
             <button id="jobSearchBtn" class="btn-primary">Search</button>
           </div>
 
-          <div class="flex items-center gap-3 mb-4 small">
+          <div class="flex items-center gap-3 small">
             <label>Sort:</label>
             <select id="sortSelect" class="p-2 rounded-md bg-transparent border border-white/6">
               <option value="newest">Newest</option>
@@ -196,7 +234,7 @@
         <textarea id="appMessage" class="p-3 rounded-md bg-transparent border border-white/6" placeholder="Short message (why you're fit)"></textarea>
 
         <div>
-          <label class="small">Resume (PDF / DOCX / TXT)</label>
+          <label class="small">Resume (PDF / DOCX / TXT) — optional</label>
           <input id="appResumeFile" type="file" accept=".pdf,.docx,.txt" class="mt-2" />
         </div>
 
@@ -210,7 +248,7 @@
     </div>
   </div>
 
-  <!-- Resume Maker Modal -->
+  <!-- Resume Maker Modal (unchanged from your previous version) -->
   <div id="resumeMakerModal" class="modal-backdrop hidden" aria-hidden="true">
     <div class="glass modal-panel">
       <div class="flex items-center justify-between">
@@ -231,7 +269,7 @@
         </div>
 
         <div>
-          <label class="small">Experience (one per line, format: Title — Company — Short points)</label>
+          <label class="small">Experience (one per line)</label>
           <textarea id="rmExperience" class="p-3 rounded-md bg-transparent border border-white/6" placeholder="Senior Developer — Tech Co — Built features..."></textarea>
           <label class="small mt-2">Education (one per line)</label>
           <textarea id="rmEducation" class="p-3 rounded-md bg-transparent border border-white/6" placeholder="B.Tech — ABC University — 2019"></textarea>
@@ -252,7 +290,7 @@
     </div>
   </div>
 
-  <!-- ATS Score Modal -->
+  <!-- ATS Modal -->
   <div id="atsModal" class="modal-backdrop hidden" aria-hidden="true">
     <div class="glass modal-panel">
       <div class="flex items-center justify-between">
@@ -283,17 +321,24 @@
   <div id="toastWrap" aria-live="polite" aria-atomic="true"></div>
 
 <script>
-/* ========== Data store keys ========== */
+/* ---------- Core demo logic with updated resume box hooks ---------- */
 const STORE_KEYS = { USERS: 'demo_users_v1', JOBS: 'demo_jobs_v1', APPS: 'demo_apps_v1', RESUMES: 'demo_resumes_v1' };
-
-/* ---------- small utilities ---------- */
-function readStore(key){ try{ return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ return []; } }
-function writeStore(key, data){ localStorage.setItem(key, JSON.stringify(data)); }
+function readStore(key){ try{ return JSON.parse(localStorage.getItem(key) || '[]'); }catch(e){return []} }
+function writeStore(key,data){ localStorage.setItem(key, JSON.stringify(data)); }
 function uid(prefix='id'){ return prefix + '-' + Math.random().toString(36).slice(2,10); }
 function escapeHtml(s=''){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 function showToast(msg, type='info', t=3000){ const wrap=document.getElementById('toastWrap'); const el=document.createElement('div'); el.className='toast'; el.textContent=msg; if(type==='success') el.style.borderLeft='4px solid var(--success)'; if(type==='error') el.style.borderLeft='4px solid var(--danger)'; wrap.prepend(el); setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(),220); }, t); }
 
-/* ---------- DOM refs ---------- */
+/* DOM refs (new + existing) */
+const hiddenFileInput = document.getElementById('hiddenFileInput');
+const selectFileBtn = document.getElementById('selectFileBtn');
+const clearUploadedBtn = document.getElementById('clearUploadedBtn');
+const uploadArea = document.getElementById('uploadArea');
+const uploadedFileName = document.getElementById('uploadedFileName');
+const studentResumeText = document.getElementById('studentResumeText');
+const useCreatedResumeBtn = document.getElementById('useCreatedResumeBtn');
+const savePastedResumeBtn = document.getElementById('savePastedResumeBtn');
+
 const demoStudentBtn = document.getElementById('demoStudentBtn');
 const demoRecruiterBtn = document.getElementById('demoRecruiterBtn');
 const demoStudentAlt = document.getElementById('demoStudentAlt');
@@ -305,19 +350,18 @@ const authArea = document.getElementById('authArea');
 const dashboardArea = document.getElementById('dashboardArea');
 const dashTitle = document.getElementById('dashTitle');
 const userRoleBadge = document.getElementById('userRoleBadge');
-
 const recruiterPanel = document.getElementById('recruiterPanel');
 const studentPanel = document.getElementById('studentPanel');
-
 const postedJobsList = document.getElementById('postedJobsList');
 const applicationsList = document.getElementById('applicationsList');
 const jobsFeed = document.getElementById('jobsFeed');
-
 const postJobBtn = document.getElementById('postJobBtn');
 const jobTitleInput = document.getElementById('jobTitle');
 const jobCompanyInput = document.getElementById('jobCompany');
 const jobDescInput = document.getElementById('jobDesc');
+const uploadResumeBtn = document.getElementById('uploadResumeBtn');
 
+/* other modal elements kept from previous file */
 const applyModal = document.getElementById('applyModal');
 const applyJobTitle = document.getElementById('applyJobTitle');
 const applicantName = document.getElementById('applicantName');
@@ -330,7 +374,7 @@ const closeApply = document.getElementById('closeApply');
 const applySpinner = document.getElementById('applySpinner');
 
 const resumeMakerModal = document.getElementById('resumeMakerModal');
-const openResumeMakerBtn = document.getElementById('openResumeMakerBtn');
+const openResumeMakerBtn = document.getElementById('openResumeMakerBtn') || document.getElementById('openResumeMakerBtn2');
 const closeResumeMaker = document.getElementById('closeResumeMaker');
 const generateResumeBtn = document.getElementById('generateResumeBtn');
 const saveResumeBtn = document.getElementById('saveResumeBtn');
@@ -342,10 +386,6 @@ const rmExperience = document.getElementById('rmExperience');
 const rmEducation = document.getElementById('rmEducation');
 const rmPreview = document.getElementById('rmPreview');
 
-const studentResumeText = document.getElementById('studentResumeText');
-const pasteResumeBtn = document.getElementById('pasteResumeBtn');
-const quickSearchInput = document.getElementById('quickSearchInput');
-const quickSearchBtn = document.getElementById('quickSearchBtn');
 const jobSearchInput = document.getElementById('jobSearchInput');
 const jobSearchBtn = document.getElementById('jobSearchBtn');
 const sortSelect = document.getElementById('sortSelect');
@@ -357,65 +397,85 @@ const atsSummary = document.getElementById('atsSummary');
 const atsMatchedChips = document.getElementById('atsMatchedChips');
 const atsMissingChips = document.getElementById('atsMissingChips');
 
-/* ---------- state ---------- */
 let currentUser = null;
 let applyingJobId = null;
 
-/* ---------- UI wiring ---------- */
-showLoginBtn.addEventListener('click', ()=>{ loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); });
-showRegisterBtn.addEventListener('click', ()=>{ registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); });
-document.getElementById('regCancel').addEventListener('click', ()=>{ registerForm.classList.add('hidden'); loginForm.classList.remove('hidden'); });
-
-demoStudentBtn.addEventListener('click', ()=> loginDemo('student'));
-demoRecruiterBtn.addEventListener('click', ()=> loginDemo('recruiter'));
-demoStudentAlt && demoStudentAlt.addEventListener('click', ()=> loginDemo('student'));
-
-openResumeMakerBtn.addEventListener('click', ()=> { resumeMakerModal.classList.remove('hidden'); resumeMakerModal.setAttribute('aria-hidden','false'); });
-closeResumeMaker.addEventListener('click', ()=> { resumeMakerModal.classList.add('hidden'); resumeMakerModal.setAttribute('aria-hidden','true'); });
-
-document.getElementById('uploadResumeBtn').addEventListener('click', ()=> {
-  // open file picker via hidden input
-  const inp = document.createElement('input');
-  inp.type='file'; inp.accept='.pdf,.docx,.txt';
-  inp.onchange = async ()=> {
-    if(inp.files && inp.files[0]) {
-      try{
-        const txt = await parseFile(inp.files[0]);
-        studentResumeText.value = txt;
-        showToast('Resume uploaded and parsed','success');
-        // save as last resume
-        saveResumeToStore({ id: uid('r'), name: 'Uploaded Resume', text: txt, createdAt: Date.now() });
-      }catch(e){ console.error(e); showToast('Failed to parse resume','error'); }
-    }
-  };
-  inp.click();
+/* ---------- Resume Box behavior ---------- */
+// handle choose file button
+selectFileBtn.addEventListener('click', ()=> hiddenFileInput.click());
+hiddenFileInput.addEventListener('change', async (e)=>{
+  if(e.target.files && e.target.files[0]){
+    const f = e.target.files[0];
+    uploadedFileName.textContent = f.name;
+    try{
+      const text = await parseFile(f);
+      studentResumeText.value = text;
+      saveResumeToStore({ id: uid('r'), name: f.name, text, createdAt: Date.now() });
+      showToast('Resume uploaded and parsed','success');
+    }catch(err){ console.error(err); showToast('Failed to parse resume','error'); }
+  }
+});
+// clear uploaded
+clearUploadedBtn.addEventListener('click', ()=> {
+  hiddenFileInput.value = '';
+  uploadedFileName.textContent = '';
+  studentResumeText.value = '';
+  showToast('Cleared uploaded resume and pasted text','info');
+});
+// drag & drop onto upload area
+uploadArea.addEventListener('dragover', e=>{ e.preventDefault(); uploadArea.style.borderColor = 'rgba(99,102,241,0.18)'; });
+uploadArea.addEventListener('dragleave', e=>{ uploadArea.style.borderColor = ''; });
+uploadArea.addEventListener('drop', async (e)=> {
+  e.preventDefault(); uploadArea.style.borderColor = '';
+  const f = e.dataTransfer.files[0];
+  if(f){ hiddenFileInput.files = e.dataTransfer.files; const evt = new Event('change'); hiddenFileInput.dispatchEvent(evt); }
 });
 
-quickSearchBtn.addEventListener('click', ()=> {
-  const q = quickSearchInput.value.trim();
-  if(!q) { showToast('Enter keywords to search quickly','error'); return; }
-  jobSearchInput.value = q;
-  doJobSearch(q);
+// use created resume button
+useCreatedResumeBtn.addEventListener('click', ()=> {
+  const latest = getLatestSavedResume();
+  if(!latest){ showToast('No saved resume found. Create one in Resume Maker or paste/upload a resume.','error'); return; }
+  studentResumeText.value = latest.text || '';
+  showToast('Loaded latest saved resume','success');
 });
 
-jobSearchBtn.addEventListener('click', ()=> {
-  const q = jobSearchInput.value.trim();
-  doJobSearch(q);
+// save pasted resume as stored resume
+savePastedResumeBtn.addEventListener('click', ()=> {
+  const text = studentResumeText.value.trim();
+  if(!text){ showToast('Paste or upload resume text first','error'); return; }
+  saveResumeToStore({ id: uid('r'), name: 'Pasted Resume', text, createdAt: Date.now() });
+  showToast('Pasted resume saved','success');
 });
 
-pasteResumeBtn.addEventListener('click', ()=> {
-  // load last saved resume if present
-  const resumes = readStore(STORE_KEYS.RESUMES);
-  if(resumes.length === 0) { showToast('No saved resume found — create one in Resume Maker','error'); return; }
-  // use latest
-  studentResumeText.value = resumes[resumes.length - 1].text || '';
-  showToast('Loaded latest created resume','success');
+/* ---------- Resume Maker hooks (same behavior) ---------- */
+openResumeMakerBtn && openResumeMakerBtn.addEventListener('click', ()=> { resumeMakerModal.classList.remove('hidden'); resumeMakerModal.setAttribute('aria-hidden','false'); });
+closeResumeMaker && closeResumeMaker.addEventListener('click', ()=> { resumeMakerModal.classList.add('hidden'); resumeMakerModal.setAttribute('aria-hidden','true'); });
+
+generateResumeBtn && generateResumeBtn.addEventListener('click', ()=>{
+  const name = rmName.value.trim(), summary = rmSummary.value.trim(), skills = rmSkills.value.trim(), exp = rmExperience.value.trim(), edu = rmEducation.value.trim();
+  if(!name){ showToast('Enter your name','error'); return; }
+  const parts = [name];
+  if(summary) parts.push('\nSummary\n' + summary);
+  if(exp) parts.push('\nExperience\n' + exp);
+  if(edu) parts.push('\nEducation\n' + edu);
+  if(skills) parts.push('\nSkills\n' + skills);
+  const full = parts.join('\n\n');
+  rmPreview.textContent = full;
+  showToast('Resume preview generated','success');
 });
-
-closeApply.addEventListener('click', closeApplyModal);
-cancelApplyBtn.addEventListener('click', closeApplyModal);
-
-closeAtsModal.addEventListener('click', ()=> { atsModal.classList.add('hidden'); atsModal.setAttribute('aria-hidden','true'); });
+saveResumeBtn && saveResumeBtn.addEventListener('click', ()=>{
+  const text = rmPreview.textContent.trim();
+  if(!text){ showToast('Generate resume first','error'); return; }
+  saveResumeToStore({ id: uid('r'), name: rmName.value.trim() || 'Resume', text, createdAt: Date.now() });
+  showToast('Resume saved locally','success');
+});
+exportResumePdfBtn && exportResumePdfBtn.addEventListener('click', ()=>{
+  const text = rmPreview.textContent.trim();
+  if(!text){ showToast('Generate resume first','error'); return; }
+  const blob = new Blob([text], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'resume.pdf'; a.click(); URL.revokeObjectURL(url);
+  showToast('Resume exported (basic PDF)','success');
+});
 
 /* ---------- demo users & auth ---------- */
 function ensureDemoUsers(){
@@ -424,412 +484,72 @@ function ensureDemoUsers(){
   if(!users.find(u=>u.email==='demo.recruiter@local')) users.push({ id: uid('u'), name: 'Demo Recruiter', email: 'demo.recruiter@local', role: 'recruiter' });
   writeStore(STORE_KEYS.USERS, users);
 }
-
 function loginDemo(role){
   ensureDemoUsers();
   const users = readStore(STORE_KEYS.USERS);
-  const user = users.find(u => u.role === role);
-  if(!user) { showToast('Demo user not found','error'); return; }
-  currentUser = user;
-  localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  showToast(`Logged in as ${user.name}`, 'success');
-  renderDashboard();
+  const user = users.find(u=>u.role===role);
+  if(!user) return showToast('Demo user not found','error');
+  currentUser = user; localStorage.setItem('currentUser', JSON.stringify(currentUser)); showToast(`Logged in as ${user.name}`,'success'); renderDashboard();
 }
+document.getElementById('registerForm').addEventListener('submit', (e)=>{ e.preventDefault(); const name=document.getElementById('regName').value.trim(); const email=document.getElementById('regEmail').value.trim(); const role=document.getElementById('regRole').value; if(!name||!email){ showToast('Fill required fields','error'); return; } let users = readStore(STORE_KEYS.USERS); if(users.find(u=>u.email===email)){ showToast('User exists — login','error'); return; } const newUser={id:uid('u'),name,email,role}; users.push(newUser); writeStore(STORE_KEYS.USERS,users); currentUser=newUser; localStorage.setItem('currentUser', JSON.stringify(currentUser)); showToast('Registered & logged in','success'); renderDashboard(); });
+document.getElementById('loginForm').addEventListener('submit', (e)=>{ e.preventDefault(); const email=document.getElementById('loginEmail').value.trim(); const users = readStore(STORE_KEYS.USERS); const user = users.find(u=>u.email===email); if(!user){ showToast('User not found — please register','error'); return; } currentUser = user; localStorage.setItem('currentUser', JSON.stringify(currentUser)); showToast('Login successful','success'); renderDashboard(); });
 
-document.getElementById('registerForm').addEventListener('submit', (e)=>{
-  e.preventDefault();
-  const name = document.getElementById('regName').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const role = document.getElementById('regRole').value;
-  if(!name || !email){ showToast('Fill required fields','error'); return; }
-  let users = readStore(STORE_KEYS.USERS);
-  if(users.find(u=>u.email===email)){ showToast('User already exists — please login','error'); return; }
-  const newUser = { id: uid('u'), name, email, role };
-  users.push(newUser); writeStore(STORE_KEYS.USERS, users);
-  currentUser = newUser; localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  showToast('Registered and logged in','success');
-  renderDashboard();
-});
+/* ---------- posting jobs & rendering (kept same) ---------- */
+postJobBtn.addEventListener('click', ()=>{ if(!currentUser || currentUser.role !== 'recruiter'){ showToast('Login as recruiter to post jobs','error'); return; } const title=jobTitleInput.value.trim(), company=jobCompanyInput.value.trim(), desc=jobDescInput.value.trim(); if(!title||!company||!desc){ showToast('Fill all job fields','error'); return; } const jobs = readStore(STORE_KEYS.JOBS); const job = { id: uid('job'), title, company, desc, recruiterId: currentUser.id, createdAt: Date.now() }; jobs.unshift(job); writeStore(STORE_KEYS.JOBS, jobs); jobTitleInput.value=''; jobCompanyInput.value=''; jobDescInput.value=''; showToast('Job posted','success'); renderJobsFeed(); renderPostedJobs(); });
 
-document.getElementById('loginForm').addEventListener('submit', (e)=>{
-  e.preventDefault();
-  const email = document.getElementById('loginEmail').value.trim();
-  const users = readStore(STORE_KEYS.USERS);
-  const user = users.find(u=>u.email === email);
-  if(!user){ showToast('User not found — please register','error'); return; }
-  currentUser = user; localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  showToast('Login successful','success'); renderDashboard();
-});
+function renderJobsFeed(filteredJobs){ const jobs = filteredJobs || readStore(STORE_KEYS.JOBS) || []; jobsFeed.innerHTML=''; if(!jobs.length){ jobsFeed.innerHTML = '<p class="small text-gray-400">No jobs posted yet.</p>'; return; } const resumeText = (studentResumeText && studentResumeText.value.trim()) || (getLatestSavedResume()?.text || ''); for(const j of jobs){ const card=document.createElement('div'); card.className='job-card glass'; let previewScoreHTML=''; if(resumeText){ const s = computeATSSimple(resumeText, j.desc); previewScoreHTML=`<div class="score-pill ${s>=70?'score-high':s>=40?'score-med':'score-low'}">${s}%</div>`; } card.innerHTML = `<div class="flex justify-between items-start"><div><h4 class="text-sm font-semibold">${escapeHtml(j.title)}</h4><div class="small text-gray-400 mt-1">${escapeHtml(j.company)}</div></div><div class="text-xs text-gray-400">${new Date(j.createdAt).toLocaleString()}</div></div><p class="text-sm text-gray-300 mt-3">${escapeHtml(j.desc)}</p><div class="mt-3 flex gap-2 items-center"><button data-job="${j.id}" class="applyBtn btn-ghost">Apply</button><button data-job="${j.id}" class="viewBtn btn-muted">View</button><button data-job="${j.id}" class="scoreBtn btn-muted">Score</button><div class="ml-auto">${previewScoreHTML}</div></div>`; jobsFeed.appendChild(card); } document.querySelectorAll('.applyBtn').forEach(b=> b.addEventListener('click', (ev)=> openApplyModal(ev.currentTarget.getAttribute('data-job')))); document.querySelectorAll('.viewBtn').forEach(b=> b.addEventListener('click', (ev)=> viewJobDetails(ev.currentTarget.getAttribute('data-job')))); document.querySelectorAll('.scoreBtn').forEach(b=> b.addEventListener('click', (ev)=> scoreJobForStudent(ev.currentTarget.getAttribute('data-job')))); }
 
-/* ---------- posting jobs ---------- */
-postJobBtn.addEventListener('click', ()=>{
-  if(!currentUser || currentUser.role !== 'recruiter'){ showToast('Login as recruiter to post jobs','error'); return; }
-  const title = jobTitleInput.value.trim();
-  const company = jobCompanyInput.value.trim();
-  const desc = jobDescInput.value.trim();
-  if(!title || !company || !desc){ showToast('Fill all job fields','error'); return; }
-  const jobs = readStore(STORE_KEYS.JOBS);
-  const job = { id: uid('job'), title, company, desc, recruiterId: currentUser.id, createdAt: Date.now() };
-  jobs.unshift(job); writeStore(STORE_KEYS.JOBS, jobs);
-  jobTitleInput.value=''; jobCompanyInput.value=''; jobDescInput.value='';
-  showToast('Job posted','success'); renderJobsFeed(); renderPostedJobs();
-});
+function renderPostedJobs(){ postedJobsList.innerHTML=''; if(!currentUser) return; const jobs = readStore(STORE_KEYS.JOBS).filter(j=> j.recruiterId === currentUser.id); if(!jobs.length){ postedJobsList.innerHTML = '<p class="small text-gray-400">You have not posted jobs yet.</p>'; return; } for(const j of jobs){ const el=document.createElement('div'); el.className='glass p-3 rounded-md'; el.innerHTML = `<div class="flex justify-between"><div><strong>${escapeHtml(j.title)}</strong><div class="small text-gray-400">${escapeHtml(j.company)}</div></div><div class="text-xs text-gray-400">${new Date(j.createdAt).toLocaleString()}</div></div><p class="small text-gray-300 mt-2">${escapeHtml(j.desc)}</p>`; postedJobsList.appendChild(el); } }
 
-/* ---------- render lists ---------- */
-function renderJobsFeed(filteredJobs){
-  const jobs = filteredJobs || readStore(STORE_KEYS.JOBS) || [];
-  jobsFeed.innerHTML = '';
-  if(!jobs.length){ jobsFeed.innerHTML = '<p class="small text-gray-400">No jobs posted yet.</p>'; return; }
-  // if student has resume text, compute relevance for sorting/seeding UI
-  const resumeText = (studentResumeText && studentResumeText.value.trim()) || '';
+function renderApplications(){ applicationsList.innerHTML=''; if(!currentUser) return; const jobs = readStore(STORE_KEYS.JOBS); const apps = readStore(STORE_KEYS.APPS).filter(a=>{ const job = jobs.find(j=>j.id===a.jobId); return job && job.recruiterId === currentUser.id; }); if(!apps.length){ applicationsList.innerHTML = '<p class="small text-gray-400">No applications yet.</p>'; return; } for(const a of apps){ const job = readStore(STORE_KEYS.JOBS).find(j=>j.id===a.jobId) || {}; const score = a.resumeText ? computeATSSimple(a.resumeText, job.desc) : null; const scoreBadge = score !== null ? `<div class="score-pill ${score>=70?'score-high':score>=40?'score-med':'score-low'}">${score}%</div>` : `<div class="small text-gray-400">No resume</div>`; const el = document.createElement('div'); el.className='glass p-3 rounded-md'; el.innerHTML = `<div class="flex justify-between"><div><strong>${escapeHtml(a.applicantName)}</strong><div class="small text-gray-400">${escapeHtml(a.applicantEmail)}</div></div><div class="text-xs text-gray-400">${new Date(a.createdAt).toLocaleString()}</div></div><div class="small text-gray-300 mt-2"><strong>For:</strong> ${escapeHtml(job.title || '—')}</div><p class="small text-gray-300 mt-2">${escapeHtml(a.message || '')}</p><div class="mt-2 flex items-center gap-2">${scoreBadge} <button data-app="${a.id}" class="viewResumeBtn btn-ghost small">View parsed resume</button></div><details class="mt-2"><summary class="small text-gray-300">Parsed resume text</summary><pre class="text-xs text-gray-200 whitespace-pre-wrap mt-2">${escapeHtml(a.resumeText || '(no resume)')}</pre></details>`; applicationsList.appendChild(el); } document.querySelectorAll('.viewResumeBtn').forEach(b=> b.addEventListener('click', (ev)=> { const appId = ev.currentTarget.getAttribute('data-app'); const app = readStore(STORE_KEYS.APPS).find(x=>x.id===appId); if(app && app.resumeText){ const job = readStore(STORE_KEYS.JOBS).find(j=>j.id===app.jobId) || {}; showATSModal(app.resumeText, job.desc); } else showToast('No parsed resume text for this application','error'); })); }
 
-  for(const j of jobs){
-    const card = document.createElement('div');
-    card.className = 'job-card glass';
-    // compute preview ATS score only if resume present - it's a quick rough estimate
-    let previewScoreHTML = '';
-    if(resumeText) {
-      const s = computeATSSimple(resumeText, j.desc);
-      previewScoreHTML = `<div class="score-pill ${s >= 70 ? 'score-high' : s >= 40 ? 'score-med' : 'score-low'}">${s}%</div>`;
-    }
-    card.innerHTML = `
-      <div class="flex justify-between items-start">
-        <div>
-          <h4 class="text-sm font-semibold">${escapeHtml(j.title)}</h4>
-          <div class="small text-gray-400 mt-1">${escapeHtml(j.company)}</div>
-        </div>
-        <div class="text-xs text-gray-400">${new Date(j.createdAt).toLocaleString()}</div>
-      </div>
-      <p class="text-sm text-gray-300 mt-3">${escapeHtml(j.desc)}</p>
-      <div class="mt-3 flex gap-2 items-center">
-        <button data-job="${j.id}" class="applyBtn btn-ghost">Apply</button>
-        <button data-job="${j.id}" class="viewBtn btn-muted">View</button>
-        <button data-job="${j.id}" class="scoreBtn btn-muted">Score</button>
-        <div class="ml-auto">${previewScoreHTML}</div>
-      </div>
-    `;
-    jobsFeed.appendChild(card);
-  }
-
-  // attach handlers
-  document.querySelectorAll('.applyBtn').forEach(b=> b.addEventListener('click', (ev)=> openApplyModal(ev.currentTarget.getAttribute('data-job'))));
-  document.querySelectorAll('.viewBtn').forEach(b=> b.addEventListener('click', (ev)=> viewJobDetails(ev.currentTarget.getAttribute('data-job'))));
-  document.querySelectorAll('.scoreBtn').forEach(b=> b.addEventListener('click', (ev)=> {
-    const id = ev.currentTarget.getAttribute('data-job'); scoreJobForStudent(id);
-  }));
-}
-
-function renderPostedJobs(){
-  postedJobsList.innerHTML = '';
-  if(!currentUser) return;
-  const jobs = readStore(STORE_KEYS.JOBS).filter(j=> j.recruiterId === currentUser.id);
-  if(!jobs.length){ postedJobsList.innerHTML = '<p class="small text-gray-400">You have not posted jobs yet.</p>'; return; }
-  for(const j of jobs){
-    const el = document.createElement('div'); el.className = 'glass p-3 rounded-md';
-    el.innerHTML = `<div class="flex justify-between"><div><strong>${escapeHtml(j.title)}</strong><div class="small text-gray-400">${escapeHtml(j.company)}</div></div><div class="text-xs text-gray-400">${new Date(j.createdAt).toLocaleString()}</div></div><p class="small text-gray-300 mt-2">${escapeHtml(j.desc)}</p>`;
-    postedJobsList.appendChild(el);
-  }
-}
-
-function renderApplications(){
-  applicationsList.innerHTML = '';
-  if(!currentUser) return;
-  // get apps for jobs posted by current recruiter
-  const jobs = readStore(STORE_KEYS.JOBS);
-  const apps = readStore(STORE_KEYS.APPS).filter(a=>{
-    const job = jobs.find(j=>j.id===a.jobId);
-    return job && job.recruiterId === currentUser.id;
-  });
-  if(!apps.length){ applicationsList.innerHTML = '<p class="small text-gray-400">No applications yet.</p>'; return; }
-  for(const a of apps){
-    const job = readStore(STORE_KEYS.JOBS).find(j=>j.id===a.jobId) || {};
-    // compute ATS score of application vs job (if resumeText exists)
-    const score = a.resumeText ? computeATSSimple(a.resumeText, job.desc) : null;
-    const scoreBadge = score !== null ? `<div class="score-pill ${score>=70?'score-high':score>=40?'score-med':'score-low'}">${score}%</div>` : `<div class="small text-gray-400">No resume</div>`;
-    const el = document.createElement('div'); el.className = 'glass p-3 rounded-md';
-    el.innerHTML = `<div class="flex justify-between"><div><strong>${escapeHtml(a.applicantName)}</strong><div class="small text-gray-400">${escapeHtml(a.applicantEmail)}</div></div><div class="text-xs text-gray-400">${new Date(a.createdAt).toLocaleString()}</div></div>
-      <div class="small text-gray-300 mt-2"><strong>For:</strong> ${escapeHtml(job.title || '—')}</div>
-      <p class="small text-gray-300 mt-2">${escapeHtml(a.message || '')}</p>
-      <div class="mt-2 flex items-center gap-2">${scoreBadge} <button data-app="${a.id}" class="viewResumeBtn btn-ghost small">View parsed resume</button></div>
-      <details class="mt-2"><summary class="small text-gray-300">Parsed resume text</summary><pre class="text-xs text-gray-200 whitespace-pre-wrap mt-2">${escapeHtml(a.resumeText || '(no resume)')}</pre></details>
-    `;
-    applicationsList.appendChild(el);
-  }
-  // viewResumeBtn handlers (optional)
-  document.querySelectorAll('.viewResumeBtn').forEach(b=> b.addEventListener('click', (ev)=> {
-    const appId = ev.currentTarget.getAttribute('data-app');
-    const app = readStore(STORE_KEYS.APPS).find(x=>x.id===appId);
-    if(app && app.resumeText) {
-      // show ATS modal with resume vs job where job = find job
-      const job = readStore(STORE_KEYS.JOBS).find(j=>j.id===app.jobId) || {};
-      showATSModal(app.resumeText, job.desc);
-    } else showToast('No parsed resume text for this application','error');
-  }));
-}
-
-/* ---------- apply flow ---------- */
-function openApplyModal(jobId){
-  if(!currentUser || currentUser.role !== 'student'){ showToast('Please login as a student to apply','error'); return; }
-  applyingJobId = jobId;
-  const job = readStore(STORE_KEYS.JOBS).find(j=>j.id===jobId);
-  applyJobTitle.textContent = job ? `${job.title} — ${job.company}` : 'Apply';
-  applicantName.value = currentUser.name || '';
-  applicantEmail.value = currentUser.email || '';
-  appMessage.value = '';
-  appResumeFile.value = '';
-  applyModal.classList.remove('hidden'); applyModal.setAttribute('aria-hidden','false');
-  document.addEventListener('keydown', escCloseApply);
-}
+/* ---------- apply modal flow (same) ---------- */
+function openApplyModal(jobId){ if(!currentUser || currentUser.role !== 'student'){ showToast('Please login as a student to apply','error'); return; } applyingJobId = jobId; const job = readStore(STORE_KEYS.JOBS).find(j=>j.id===jobId); applyJobTitle.textContent = job ? `${job.title} — ${job.company}` : 'Apply'; applicantName.value = currentUser.name || ''; applicantEmail.value = currentUser.email || ''; appMessage.value = ''; appResumeFile.value = ''; applyModal.classList.remove('hidden'); applyModal.setAttribute('aria-hidden','false'); document.addEventListener('keydown', escCloseApply); }
 function closeApplyModal(){ applyModal.classList.add('hidden'); applyModal.setAttribute('aria-hidden','true'); applyingJobId = null; document.removeEventListener('keydown', escCloseApply); }
 function escCloseApply(e){ if(e.key === 'Escape') closeApplyModal(); }
+closeApply.addEventListener('click', closeApplyModal);
+cancelApplyBtn.addEventListener('click', closeApplyModal);
 
-submitApplicationBtn.addEventListener('click', async ()=>{
-  const name = applicantName.value.trim();
-  const email = applicantEmail.value.trim();
-  const message = appMessage.value.trim();
-  if(!name || !email){ showToast('Please enter name and email','error'); return; }
-  applySpinner.classList.remove('hidden'); submitApplicationBtn.disabled = true;
-  // parse file if present
-  let resumeText = '';
-  if(appResumeFile.files && appResumeFile.files[0]){
-    try{ resumeText = await parseFile(appResumeFile.files[0]); } catch(e){ console.error(e); showToast('Failed to parse resume; submitting without parsed text','error'); }
-  } else {
-    // fallback to student's pasted resume text or saved resume
-    resumeText = studentResumeText.value.trim() || (getLatestSavedResume()?.text || '');
-  }
-  const apps = readStore(STORE_KEYS.APPS);
-  const app = { id: uid('app'), jobId: applyingJobId, applicantName: name, applicantEmail: email, message, resumeText, createdAt: Date.now() };
-  apps.unshift(app); writeStore(STORE_KEYS.APPS, apps);
-  showToast('Application submitted','success');
-  applySpinner.classList.add('hidden'); submitApplicationBtn.disabled = false; closeApplyModal();
-  // notify recruiter across tabs
-  localStorage.setItem('recentAppNotification', JSON.stringify({ jobId: app.jobId, time: Date.now() }));
-  if(currentUser && currentUser.role === 'recruiter') renderApplications();
-});
+submitApplicationBtn.addEventListener('click', async ()=>{ const name = applicantName.value.trim(); const email = applicantEmail.value.trim(); const message = appMessage.value.trim(); if(!name || !email){ showToast('Please enter name and email','error'); return; } applySpinner.classList.remove('hidden'); submitApplicationBtn.disabled = true; let resumeText = ''; if(appResumeFile.files && appResumeFile.files[0]){ try{ resumeText = await parseFile(appResumeFile.files[0]); }catch(err){ console.error(err); showToast('Failed to parse resume; submitting without parsed text','error'); } } else { resumeText = studentResumeText.value.trim() || (getLatestSavedResume()?.text || ''); } const apps = readStore(STORE_KEYS.APPS); const app = { id: uid('app'), jobId: applyingJobId, applicantName: name, applicantEmail: email, message, resumeText, createdAt: Date.now() }; apps.unshift(app); writeStore(STORE_KEYS.APPS, apps); showToast('Application submitted','success'); applySpinner.classList.add('hidden'); submitApplicationBtn.disabled = false; closeApplyModal(); localStorage.setItem('recentAppNotification', JSON.stringify({ jobId: app.jobId, time: Date.now() })); if(currentUser && currentUser.role === 'recruiter') renderApplications(); });
 
-/* ---------- file parsing (pdf/docx/txt) ---------- */
-async function parseFile(file){
-  const ext = file.name.split('.').pop().toLowerCase();
-  if(ext === 'txt') return await file.text();
-  else if(ext === 'pdf'){
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let text = '';
-    for(let i=1;i<=pdf.numPages;i++){
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      text += content.items.map(it=>it.str).join(' ') + '\n';
-    }
-    return text;
-  } else if(ext === 'docx'){
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    return result.value;
-  } else throw new Error('Unsupported file type');
-}
+/* ---------- parse files ---------- */
+async function parseFile(file){ const ext = file.name.split('.').pop().toLowerCase(); if(ext === 'txt') return await file.text(); else if(ext === 'pdf'){ const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise; let text=''; for(let i=1;i<=pdf.numPages;i++){ const page = await pdf.getPage(i); const content = await page.getTextContent(); text += content.items.map(it=>it.str).join(' ') + '\n'; } return text; } else if(ext === 'docx'){ const arrayBuffer = await file.arrayBuffer(); const result = await mammoth.extractRawText({ arrayBuffer }); return result.value; } else throw new Error('Unsupported file type'); }
 
-/* ---------- Resume Maker actions ---------- */
-generateResumeBtn.addEventListener('click', ()=>{
-  const name = rmName.value.trim(), summary = rmSummary.value.trim(), skills = rmSkills.value.trim(), exp = rmExperience.value.trim(), edu = rmEducation.value.trim();
-  if(!name){ showToast('Enter your name','error'); return; }
-  const lines = [];
-  lines.push(name);
-  if(summary) { lines.push('\nSummary\n' + summary); }
-  if(exp) { lines.push('\nExperience\n' + exp); }
-  if(edu) { lines.push('\nEducation\n' + edu); }
-  if(skills) { lines.push('\nSkills\n' + skills); }
-  const full = lines.join('\n\n');
-  rmPreview.textContent = full;
-  showToast('Preview generated','success');
-});
-
-saveResumeBtn.addEventListener('click', ()=>{
-  const text = rmPreview.textContent.trim();
-  if(!text){ showToast('Generate resume first','error'); return; }
-  saveResumeToStore({ id: uid('r'), name: rmName.value.trim() || 'Resume', text, createdAt: Date.now() });
-  showToast('Resume saved locally','success');
-});
-
-exportResumePdfBtn.addEventListener('click', ()=>{
-  const text = rmPreview.textContent.trim();
-  if(!text){ showToast('Generate resume first','error'); return; }
-  // simple txt->pdf approach: create blob of text with PDF mime; this won't be formatted PDF, but for demo it's acceptable.
-  // Better approach in production: use jsPDF or html2pdf.
-  const blob = new Blob([text], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'resume.pdf'; a.click();
-  URL.revokeObjectURL(url);
-  showToast('Resume exported (basic PDF)','success');
-});
-
+/* ---------- Resume storage helpers ---------- */
 function saveResumeToStore(resume){ const arr = readStore(STORE_KEYS.RESUMES); arr.push(resume); writeStore(STORE_KEYS.RESUMES, arr); }
-function getLatestSavedResume(){ const arr = readStore(STORE_KEYS.RESUMES); return arr.length ? arr[arr.length-1] : null; }
-
-/* ---------- Job search & sort ---------- */
-function doJobSearch(q){
-  const jobs = readStore(STORE_KEYS.JOBS);
-  if(!q){ renderJobsFeed(jobs); return; }
-  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
-  const filtered = jobs.map(j => {
-    const hay = (j.title + ' ' + j.company + ' ' + j.desc).toLowerCase();
-    let matches = 0;
-    for(const t of terms) if(hay.includes(t)) matches++;
-    return { job: j, matches };
-  }).filter(x=> x.matches > 0).sort((a,b)=> b.matches - a.matches).map(x=> x.job);
-  renderJobsFeed(filtered);
-}
-
-/* ---------- quick utilities for scoring ---------- */
-// stopword list (small)
-const STOPWORDS = new Set(['the','and','for','with','a','an','to','in','on','of','from','by','as','is','are','be','or','that','this','it','at']);
-
-// extract keywords from job description: tokenise, remove stopwords, keep words >=3, return unique top N
-function extractKeywords(text, topN=30){
-  if(!text) return [];
-  const words = text.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(w=> w.length>2 && !STOPWORDS.has(w));
-  const freq = {};
-  for(const w of words) freq[w] = (freq[w]||0) + 1;
-  const sorted = Object.keys(freq).sort((a,b)=> freq[b]-freq[a]);
-  return sorted.slice(0, topN);
-}
-
-// compute a simple ATS score: matched keywords / total keywords * 100, with slight length penalty
-function computeATSSimple(resumeText, jobDesc){
-  if(!jobDesc) return 0;
-  const kws = extractKeywords(jobDesc, 25);
-  if(kws.length === 0) return 0;
-  const rt = (resumeText || '').toLowerCase();
-  let matched = 0;
-  for(const k of kws) if(rt.includes(k)) matched++;
-  let score = Math.round((matched / kws.length) * 100);
-  // length penalty if resume too short
-  const len = rt.split(/\s+/).filter(Boolean).length;
-  if(len < 50) score = Math.max(0, score - 12); // penalize very short resumes
-  return score;
-}
-
-// show ATS modal with details (resumeText vs jobDesc)
-function showATSModal(resumeText, jobDesc){
-  const kws = extractKeywords(jobDesc, 40);
-  const matched = [], missing = [];
-  const rt = (resumeText || '').toLowerCase();
-  for(const k of kws){
-    if(rt.includes(k)) matched.push(k); else missing.push(k);
-  }
-  const s = computeATSSimple(resumeText, jobDesc);
-  // display
-  atsScoreDisplay.textContent = s + '%';
-  atsScoreDisplay.className = 'score-pill ' + (s>=70 ? 'score-high' : s>=40 ? 'score-med' : 'score-low');
-  atsSummary.textContent = `${matched.length} matched • ${missing.length} missing • based on top ${kws.length} keywords`;
-  atsMatchedChips.innerHTML = matched.map(m=>`<span class="chip-matched">${escapeHtml(m)}</span>`).join(' ');
-  atsMissingChips.innerHTML = missing.map(m=>`<span class="chip-missing">${escapeHtml(m)}</span>`).join(' ');
-  atsModal.classList.remove('hidden'); atsModal.setAttribute('aria-hidden','false');
-}
-
-/* ---------- convenience: score job for student ---------- */
-function scoreJobForStudent(jobId){
-  const job = readStore(STORE_KEYS.JOBS).find(j=>j.id===jobId);
-  if(!job) return showToast('Job not found','error');
-  // prefer uploaded/pasted resume; otherwise saved resume
-  const resumeText = (studentResumeText && studentResumeText.value.trim()) || (getLatestSavedResume()?.text || '');
-  if(!resumeText){ showToast('No resume found. Use Resume Maker or upload/paste resume for scoring','error'); return; }
-  showATSModal(resumeText, job.desc);
-}
-
-/* ---------- helper used earlier when clicking score button on job card ---------- */
-async function scoreJobForStudentAsync(jobId){
-  scoreJobForStudent(jobId);
-}
-
-/* ---------- show job details (simple alert for now) ---------- */
-function viewJobDetails(jobId){
-  const j = readStore(STORE_KEYS.JOBS).find(x=>x.id===jobId);
-  if(!j){ showToast('Job not found','error'); return; }
-  // present job and an option to score/resume
-  const modalText = `${j.title} — ${j.company}\n\n${j.desc}`;
-  // We'll open the ATS modal if resume present, else just alert
-  const resumeText = (studentResumeText && studentResumeText.value.trim()) || (getLatestSavedResume()?.text || '');
-  if(resumeText){
-    showATSModal(resumeText, j.desc);
-  } else {
-    alert(modalText);
-  }
-}
-
-/* ---------- job search sort handling ---------- */
-sortSelect.addEventListener('change', ()=> {
-  const mode = sortSelect.value;
-  if(mode === 'newest'){ renderJobsFeed(); } else if(mode === 'relevance'){ // sort by relevance to resume
-    const resumeText = (studentResumeText && studentResumeText.value.trim()) || (getLatestSavedResume()?.text || '');
-    if(!resumeText){ showToast('No resume found to compute relevance — paste or create resume','error'); return; }
-    const jobs = readStore(STORE_KEYS.JOBS).slice();
-    jobs.sort((a,b)=> computeATSSimple(resumeText, b.desc) - computeATSSimple(resumeText, a.desc));
-    renderJobsFeed(jobs);
-  }
-});
-
-/* ---------- cross-tab notifications ---------- */
-window.addEventListener('storage', (e)=>{
-  if(e.key === 'recentAppNotification'){
-    // If recruiter is logged in, refresh their view
-    if(currentUser && currentUser.role === 'recruiter'){ renderApplications(); showToast('New application received','info', 3000); }
-    // students refresh job feed
-    if(currentUser && currentUser.role === 'student'){ renderJobsFeed(); }
-  }
-});
-
-/* ---------- seed sample data & restore session ---------- */
-(function init(){
-  ensureDemoUsers();
-  // seed sample jobs if empty
-  const jobs = readStore(STORE_KEYS.JOBS);
-  if(jobs.length === 0){
-    const users = readStore(STORE_KEYS.USERS);
-    const r = users.find(u=>u.role==='recruiter') || { id: uid('u'), name: 'Demo Recruiter' };
-    const sample = [
-      { id: uid('job'), title: 'Software Engineer', company: 'Tech Corp', desc: 'Build web apps using JavaScript, React, Node.js. 2+ years experience.', recruiterId: r.id, createdAt: Date.now()-86400000 },
-      { id: uid('job'), title: 'Data Analyst', company: 'Data Inc', desc: 'Analyze datasets, SQL, Excel, visualization tools like Tableau or PowerBI.', recruiterId: r.id, createdAt: Date.now()-3600000 },
-      { id: uid('job'), title: 'Frontend Developer', company: 'UI Studio', desc: 'Strong HTML/CSS, JavaScript, React, performance optimization and accessibility.', recruiterId: r.id, createdAt: Date.now()-7200000 }
-    ];
-    writeStore(STORE_KEYS.JOBS, sample);
-  }
-  // restore session
-  const saved = localStorage.getItem('currentUser');
-  if(saved){ currentUser = JSON.parse(saved); renderDashboard(); } else renderJobsFeed();
-})();
-
-/* ---------- utilities for resume storage ---------- */
-function saveResumeObject(name, text){
-  saveResumeToStore({ id: uid('r'), name: name || 'Resume', text, createdAt: Date.now() });
-}
-
-/* ---------- helper to get latest resume ---------- */
 function getLatestSavedResume(){ const arr = readStore(STORE_KEYS.RESUMES); return arr.length ? arr[arr.length - 1] : null; }
 
-/* ---------- initial render helpers ---------- */
-function renderDashboard(){
-  if(!currentUser) return;
-  authArea.classList.add('hidden'); dashboardArea.classList.remove('hidden');
-  dashTitle.textContent = `Welcome, ${currentUser.name}`;
-  userRoleBadge.textContent = currentUser.role;
-  if(currentUser.role === 'recruiter'){ recruiterPanel.classList.remove('hidden'); studentPanel.classList.add('hidden'); renderPostedJobs(); renderApplications(); }
-  else { recruiterPanel.classList.add('hidden'); studentPanel.classList.remove('hidden'); renderJobsFeed(); }
-}
+/* ---------- ATS scoring helpers (same simple algorithm) ---------- */
+const STOPWORDS = new Set(['the','and','for','with','a','an','to','in','on','of','from','by','as','is','are','be','or','that','this','it','at']);
+function extractKeywords(text, topN=30){ if(!text) return []; const words = text.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(w=> w.length>2 && !STOPWORDS.has(w)); const freq = {}; for(const w of words) freq[w] = (freq[w]||0) + 1; const sorted = Object.keys(freq).sort((a,b)=> freq[b]-freq[a]); return sorted.slice(0, topN); }
+function computeATSSimple(resumeText, jobDesc){ if(!jobDesc) return 0; const kws = extractKeywords(jobDesc, 25); if(kws.length === 0) return 0; const rt = (resumeText || '').toLowerCase(); let matched = 0; for(const k of kws) if(rt.includes(k)) matched++; let score = Math.round((matched / kws.length) * 100); const len = rt.split(/\s+/).filter(Boolean).length; if(len < 50) score = Math.max(0, score - 12); return score; }
+function showATSModal(resumeText, jobDesc){ const kws = extractKeywords(jobDesc, 40); const matched = [], missing = []; const rt = (resumeText || '').toLowerCase(); for(const k of kws){ if(rt.includes(k)) matched.push(k); else missing.push(k); } const s = computeATSSimple(resumeText, jobDesc); atsScoreDisplay.textContent = s + '%'; atsScoreDisplay.className = 'score-pill ' + (s>=70 ? 'score-high' : s>=40 ? 'score-med' : 'score-low'); atsSummary.textContent = `${matched.length} matched • ${missing.length} missing • based on top ${kws.length} keywords`; atsMatchedChips.innerHTML = matched.map(m=>`<span class="chip-matched">${escapeHtml(m)}</span>`).join(' '); atsMissingChips.innerHTML = missing.map(m=>`<span class="chip-missing">${escapeHtml(m)}</span>`).join(' '); atsModal.classList.remove('hidden'); atsModal.setAttribute('aria-hidden','false'); }
 
-/* ---------- final helpers: job search function used by search buttons ---------- */
-function doSearchFromInputs(){
-  const q = (jobSearchInput.value || '').trim();
-  if(q) doJobSearch(q); else renderJobsFeed();
-}
-jobSearchBtn && jobSearchBtn.addEventListener('click', doSearchFromInputs);
-quickSearchBtn && quickSearchBtn.addEventListener('click', ()=> { const q = quickSearchInput.value.trim(); if(q){ jobSearchInput.value=q; doJobSearch(q); } });
+/* ---------- score a job for student ---------- */
+function scoreJobForStudent(jobId){ const job = readStore(STORE_KEYS.JOBS).find(j=>j.id===jobId); if(!job) return showToast('Job not found','error'); const resumeText = studentResumeText.value.trim() || (getLatestSavedResume()?.text || ''); if(!resumeText){ showToast('No resume found. Use Resume Maker or upload/paste resume for scoring','error'); return; } showATSModal(resumeText, job.desc); }
 
-/* ---------- small helpers for scoring UI external calls ---------- */
-function scoreJobForStudent(jobId){
-  scoreJobForStudentAsync(jobId);
-}
+/* ---------- job search & sort ---------- */
+function doJobSearch(q){ const jobs = readStore(STORE_KEYS.JOBS); if(!q){ renderJobsFeed(jobs); return; } const terms = q.toLowerCase().split(/\s+/).filter(Boolean); const filtered = jobs.map(j => { const hay = (j.title + ' ' + j.company + ' ' + j.desc).toLowerCase(); let matches = 0; for(const t of terms) if(hay.includes(t)) matches++; return { job: j, matches }; }).filter(x=> x.matches > 0).sort((a,b)=> b.matches - a.matches).map(x=> x.job); renderJobsFeed(filtered); }
+jobSearchBtn && jobSearchBtn.addEventListener('click', ()=> { const q = jobSearchInput.value.trim(); doJobSearch(q); });
+document.getElementById('regCancel').addEventListener('click', ()=>{ registerForm.classList.add('hidden'); loginForm.classList.remove('hidden'); });
+
+/* ---------- cross-tab notifications ---------- */
+window.addEventListener('storage', (e)=>{ if(e.key === 'recentAppNotification'){ if(currentUser && currentUser.role === 'recruiter'){ renderApplications(); showToast('New application received','info',3000); } if(currentUser && currentUser.role === 'student'){ renderJobsFeed(); } } });
+
+/* ---------- seed + restore ---------- */
+(function init(){ ensureDemoUsers(); const jobs = readStore(STORE_KEYS.JOBS); if(jobs.length === 0){ const users = readStore(STORE_KEYS.USERS); const r = users.find(u=>u.role==='recruiter') || { id: uid('u'), name: 'Demo Recruiter' }; const sample = [ { id: uid('job'), title: 'Software Engineer', company: 'Tech Corp', desc: 'Build web apps using JavaScript, React, Node.js. 2+ years experience.', recruiterId: r.id, createdAt: Date.now()-86400000 }, { id: uid('job'), title: 'Data Analyst', company: 'Data Inc', desc: 'Analyze datasets, SQL, Excel, visualization tools like Tableau or PowerBI.', recruiterId: r.id, createdAt: Date.now()-3600000 }, { id: uid('job'), title: 'Frontend Developer', company: 'UI Studio', desc: 'Strong HTML/CSS, JavaScript, React, performance optimization and accessibility.', recruiterId: r.id, createdAt: Date.now()-7200000 } ]; writeStore(STORE_KEYS.JOBS, sample); } const saved = localStorage.getItem('currentUser'); if(saved){ currentUser = JSON.parse(saved); renderDashboard(); } else renderJobsFeed(); })();
+
+/* ---------- resume storage convenience ---------- */
+function getLatestSavedResume(){ const arr = readStore(STORE_KEYS.RESUMES); return arr.length ? arr[arr.length - 1] : null; }
+
+/* ---------- render/UX ---------- */
+function renderDashboard(){ if(!currentUser) return; authArea.classList.add('hidden'); dashboardArea.classList.remove('hidden'); dashTitle.textContent = `Welcome, ${currentUser.name}`; userRoleBadge.textContent = currentUser.role; if(currentUser.role === 'recruiter'){ recruiterPanel.classList.remove('hidden'); studentPanel.classList.add('hidden'); renderPostedJobs(); renderApplications(); } else { recruiterPanel.classList.add('hidden'); studentPanel.classList.remove('hidden'); renderJobsFeed(); } }
+
+/* ---------- initialize event attachment for job feed buttons ---------- */
+// handlers inside renderJobsFeed
 
 /* ---------- end ---------- */
 </script>
 </body>
 </html>
+
