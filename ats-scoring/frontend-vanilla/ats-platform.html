@@ -245,49 +245,139 @@
             loginForm.classList.add('hidden');
         });
 
+        // API base URL - change this to your backend URL
+        const API_BASE = 'https://your-backend-url.com'; // Update this with your actual backend URL
+
+        // Check for existing session on page load
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('token');
+            const userData = localStorage.getItem('user');
+            if (token && userData) {
+                try {
+                    user = JSON.parse(userData);
+                    isLoggedIn = true;
+                    showDashboard();
+                } catch (error) {
+                    console.error('Error parsing stored user data:', error);
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                }
+            }
+        });
+
         // Login form
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            // Dummy login logic
-            if (email && password) {
-                isLoggedIn = true;
-                user = { email };
-                showToast('Login successful!');
-                showDashboard();
-            } else {
+
+            if (!email || !password) {
                 showToast('Please fill all fields.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    isLoggedIn = true;
+                    user = data.user;
+                    showToast('Login successful!');
+                    showDashboard();
+                } else {
+                    showToast(data.message || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showToast('Network error. Please try again.');
             }
         });
 
         // Register form
-        registerForm.addEventListener('submit', (e) => {
+        registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('registerName').value;
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
-            // Dummy register logic
-            if (name && email && password) {
-                isLoggedIn = true;
-                user = { name, email };
-                showToast('Account created and logged in!');
-                showDashboard();
-            } else {
+
+            if (!name || !email || !password) {
                 showToast('Please fill all fields.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email, password, role: 'student' }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    isLoggedIn = true;
+                    user = data.user;
+                    showToast('Account created and logged in!');
+                    showDashboard();
+                } else {
+                    showToast(data.message || 'Registration failed');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showToast('Network error. Please try again.');
             }
         });
 
-        // Demo login
-        demoLoginBtn.addEventListener('click', () => {
-            isLoggedIn = true;
-            user = { email: 'demo@example.com' };
-            showToast('Logged in as demo user!');
-            showDashboard();
+        // Demo login - uses admin credentials
+        demoLoginBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@ats-scoring.com',
+                        password: 'admin123'
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    isLoggedIn = true;
+                    user = data.user;
+                    showToast('Logged in as demo user!');
+                    showDashboard();
+                } else {
+                    showToast('Demo login failed. Please register an account.');
+                }
+            } catch (error) {
+                console.error('Demo login error:', error);
+                showToast('Network error. Please try again.');
+            }
         });
 
         // Logout
         logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
             isLoggedIn = false;
             user = null;
             showToast('Logged out successfully.');
