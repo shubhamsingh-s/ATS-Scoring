@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Scanner — ATS Scoring</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="nav">
+            <div class="container">
+                <div class="brand">
+                    <div class="logo" aria-hidden="true"></div>
+                    <h4>ATS Scoring</h4>
+                </div>
+                <nav class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="#features">Features</a>
+                    <a href="ats-platform.html" class="btn btn-primary">Login</a>
+                </nav>
+            </div>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="container">
+                    <div class="text-center">
+                        <div class="eyebrow">Resume Analysis Tool</div>
+                        <h1>Scan Your Resume Against Job Descriptions</h1>
+                        <p class="lead">Upload your resume and paste a job description to get an instant ATS compatibility score, matched keywords, and improvement recommendations.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="showcase">
+                <div class="container">
+                    <div class="max-w-2xl mx-auto">
+                        <form id="scanForm" class="upload-form" aria-label="Resume scan form">
+                            <div class="form-group">
+                                <label for="resumeFile" class="visually-hidden">Select resume file</label>
+                                <input type="file" id="resumeFile" name="resume" accept=".pdf,.doc,.docx,.txt" required aria-required="true">
+                                <small class="muted">Supported formats: PDF, DOCX, TXT (max 10MB)</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="jobDescription" class="small">Job Description</label>
+                                <textarea id="jobDescription" name="jobDescription" placeholder="Paste the job description here..." rows="6" required aria-required="true"></textarea>
+                            </div>
+                            <button type="submit" id="scanBtn" class="btn btn-primary w-full" aria-live="polite">
+                                <span class="btn-spinner" style="display:none"><span class="spinner"></span></span>
+                                <span class="btn-text">Scan Resume</span>
+                            </button>
+                        </form>
+
+                        <div id="scanResult" class="quick-upload-result" aria-live="polite"></div>
+                        <div id="analysisContainer" class="analysis-container hidden" aria-live="polite">
+                            <!-- Populated by JS after analysis -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="container footer-content">
+                <div>
+                    <h3>ATS Scoring</h3>
+                    <p class="muted">Empowering careers with AI-driven resume optimization.</p>
+                </div>
+                <div>
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="ats-platform.html">Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Contact</h4>
+                    <p class="muted">support@atsscoring.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">&copy; 2024 ATS Scoring Job Portal</div>
+        </footer>
+    </div>
+
+    <script src="js/env.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const scanForm = document.getElementById('scanForm');
+            if (scanForm) {
+                scanForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const fileInput = document.getElementById('resumeFile');
+                    const jobDesc = document.getElementById('jobDescription').value.trim();
+                    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                        showToast('Please select a resume file', 'error');
+                        return;
+                    }
+
+                    const file = fileInput.files[0];
+                    const allowedTypes = ['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain'];
+                    if (!allowedTypes.includes(file.type) && file.size > (10 * 1024 * 1024)) {
+                        showToast('Invalid file type or file too large (max 10MB)', 'error');
+                        return;
+                    }
+
+                    if (!jobDesc) {
+                        showToast('Please enter a job description', 'error');
+                        return;
+                    }
+
+                    const btn = document.getElementById('scanBtn');
+                    showLoading(btn);
+
+                    try {
+                        const fd = new FormData();
+                        fd.append('resume', file);
+                        fd.append('jobDescription', jobDesc);
+
+                        const resp = await upload('/ats/score', fd);
+                        if (resp.success) {
+                            const analysis = resp.data.analysis || resp.data;
+                            showToast('Resume scanned — results below', 'success');
+                            renderAnalysis(analysis);
+                        } else {
+                            showToast(resp.message || 'Scan failed', 'error');
+                        }
+                    } catch (err) {
+                        console.error('Scan failed', err);
+                        showToast(err.message || 'Scan failed', 'error');
+                    } finally {
+                        hideLoading(btn);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
